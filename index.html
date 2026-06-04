@@ -367,7 +367,7 @@
             <label id="price-source-label" for="price-source"></label>
             <div class="price-input-wrap">
               <input id="price-source" type="text" autocomplete="off" placeholder="0" inputmode="decimal" />
-              <img class="cur-suffix" src="currency-exalted.png" alt="Exalted" />
+              <img class="cur-suffix" src="sprites/exalted-orb.png" alt="Exalted" />
             </div>
           </div>
         </div>
@@ -377,7 +377,7 @@
             <label id="price-target-label" for="price-target"></label>
             <div class="price-input-wrap">
               <input id="price-target" type="text" autocomplete="off" placeholder="0" inputmode="decimal" />
-              <img class="cur-suffix" src="currency-exalted.png" alt="Exalted" />
+              <img class="cur-suffix" src="sprites/exalted-orb.png" alt="Exalted" />
             </div>
           </div>
         </div>
@@ -773,7 +773,7 @@
   // ---------- Calculators ----------
   const fmtP = (n) => Number(n).toLocaleString("en-US", { maximumFractionDigits: 3 });
   const imgTag = (i) => '<img src="' + spriteFor(LIQUIDS[i]) + '" alt="" style="border-color:' + tierColor(i) + '" />';
-  const CUR = '<img class="cur" src="currency-exalted.png" alt="Exalted" />';
+  const CUR = '<img class="cur" src="sprites/exalted-orb.png" alt="Exalted" />';
 
   // Accept a plain number ("1.5"), a fraction ("1/7"), or empty. Returns NaN if invalid.
   function parsePrice(str) {
