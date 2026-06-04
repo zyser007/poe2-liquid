@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>POE2 Liquid Emotion Matcher</title>
+<style>
+  :root {
+    --bg: #0d0b08;
+    --bg-card: #17130d;
+    --bg-card-2: #1f1a11;
+    --border: #3a2f1c;
+    --gold: #d4af37;
+    --gold-soft: #e8c969;
+    --text: #e8e2d4;
+    --text-dim: #9c9484;
+    --green: #6fbf73;
+    --red: #d9707a;
+    --amber: #e0a93b;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #241c10 0%, transparent 60%),
+      var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", "Helvetica Neue", system-ui, -apple-system, "Noto Sans Thai", sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 24px 16px 64px;
+  }
+
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  h1 {
+    font-size: 1.9rem;
+    margin: 0 0 8px;
+    color: var(--gold);
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 18px rgba(212, 175, 55, 0.25);
+  }
+
+  .subtitle {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    margin: 0;
+  }
+
+  .card {
+    background: linear-gradient(180deg, var(--bg-card), var(--bg-card-2));
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  }
+
+  .controls {
+    display: grid;
+    gap: 16px;
+  }
+
+  @media (min-width: 560px) {
+    .controls { grid-template-columns: 1fr 1fr; }
+  }
+
+  label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--gold-soft);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  select {
+    width: 100%;
+    padding: 11px 12px;
+    background: #100d08;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    font-size: 1rem;
+    appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23d4af37' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+  }
+
+  select:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+  }
+
+  /* Result card */
+  .result {
+    text-align: center;
+  }
+
+  .result.valid  { border-color: rgba(111, 191, 115, 0.5); }
+  .result.warn   { border-color: rgba(224, 169, 59, 0.5); }
+  .result.error  { border-color: rgba(217, 112, 122, 0.5); }
+
+  .result-status {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 12px;
+    font-weight: 700;
+  }
+  .valid  .result-status { color: var(--green); }
+  .warn   .result-status { color: var(--amber); }
+  .error  .result-status { color: var(--red); }
+
+  .result-amount {
+    font-size: 2.6rem;
+    font-weight: 800;
+    color: var(--gold);
+    line-height: 1.1;
+    margin: 6px 0;
+    text-shadow: 0 0 22px rgba(212, 175, 55, 0.3);
+  }
+
+  .result-amount small {
+    font-size: 1rem;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+
+  .result-line {
+    font-size: 1.02rem;
+    margin: 4px 0;
+  }
+
+  .result-sub {
+    color: var(--text-dim);
+    font-size: 0.92rem;
+    margin-top: 10px;
+  }
+
+  .path {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border);
+    font-size: 0.95rem;
+    color: var(--gold-soft);
+    word-break: break-word;
+  }
+  .path .arrow { color: var(--text-dim); margin: 0 4px; }
+
+  /* Direct pairs */
+  h2 {
+    font-size: 1.1rem;
+    color: var(--gold);
+    margin: 0 0 14px;
+  }
+
+  .pairs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+  }
+
+  .pairs li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    background: #100d08;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.92rem;
+  }
+
+  .pairs .from { color: var(--text); }
+  .pairs .x3 { color: var(--gold); font-weight: 700; }
+  .pairs .arrow { color: var(--text-dim); }
+  .pairs .to { color: var(--gold-soft); font-weight: 600; }
+
+  .note {
+    color: var(--text-dim);
+    font-size: 0.88rem;
+    text-align: center;
+  }
+  .note strong { color: var(--gold-soft); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>POE2 Liquid Emotion Matcher</h1>
+      <p class="subtitle">คำนวณจำนวนวัตถุดิบที่ต้องใช้ในการสร้าง Liquid Emotion</p>
+    </header>
+
+    <section class="card">
+      <div class="controls">
+        <div>
+          <label for="target">Liquid ที่ต้องการสร้าง</label>
+          <select id="target"></select>
+        </div>
+        <div>
+          <label for="source">Liquid ที่ใช้เป็นวัตถุดิบ</label>
+          <select id="source"></select>
+        </div>
+      </div>
+    </section>
+
+    <section class="card result" id="result"></section>
+
+    <section class="card">
+      <h2>คู่อัปเกรดโดยตรง (Direct Upgrade Pairs)</h2>
+      <ul class="pairs" id="pairs"></ul>
+    </section>
+
+    <p class="note">
+      กติกา: <strong>3 ชิ้นของขั้นก่อนหน้า = 1 ชิ้นของขั้นถัดไป</strong><br />
+      หากห่างกัน N ขั้น จะต้องใช้ <strong>3<sup>N</sup></strong> ชิ้น
+    </p>
+  </div>
+
+<script>
+  const LIQUIDS = [
+    "Diluted Liquid Ire",
+    "Diluted Liquid Guilt",
+    "Diluted Liquid Greed",
+    "Liquid Paranoia",
+    "Liquid Envy",
+    "Liquid Disgust",
+    "Liquid Despair",
+    "Concentrated Liquid Fear",
+    "Concentrated Liquid Suffering"
+  ];
+
+  const targetEl = document.getElementById("target");
+  const sourceEl = document.getElementById("source");
+  const resultEl = document.getElementById("result");
+  const pairsEl = document.getElementById("pairs");
+
+  function initSelects() {
+    LIQUIDS.forEach((name, i) => {
+      const o1 = document.createElement("option");
+      o1.value = i;
+      o1.textContent = name;
+      targetEl.appendChild(o1);
+
+      const o2 = document.createElement("option");
+      o2.value = i;
+      o2.textContent = name;
+      sourceEl.appendChild(o2);
+    });
+
+    // Default: Target = Liquid Disgust, Source = Liquid Envy
+    targetEl.value = LIQUIDS.indexOf("Liquid Disgust");
+    sourceEl.value = LIQUIDS.indexOf("Liquid Envy");
+  }
+
+  function renderDirectPairs() {
+    for (let i = 0; i < LIQUIDS.length - 1; i++) {
+      const li = document.createElement("li");
+      li.innerHTML =
+        '<span class="from">' + LIQUIDS[i] + '</span>' +
+        '<span class="x3">× 3</span>' +
+        '<span class="arrow">→</span>' +
+        '<span class="to">' + LIQUIDS[i + 1] + '</span>';
+      pairsEl.appendChild(li);
+    }
+  }
+
+  function calculateRequiredAmount(sourceIndex, targetIndex) {
+    return Math.pow(3, targetIndex - sourceIndex);
+  }
+
+  function buildPath(sourceIndex, targetIndex) {
+    const parts = [];
+    for (let i = sourceIndex; i <= targetIndex; i++) {
+      parts.push('<span class="step">' + LIQUIDS[i] + '</span>');
+    }
+    return parts.join('<span class="arrow">→</span>');
+  }
+
+  function renderResult() {
+    const sourceIndex = parseInt(sourceEl.value, 10);
+    const targetIndex = parseInt(targetEl.value, 10);
+    const stepDiff = targetIndex - sourceIndex;
+
+    resultEl.classList.remove("valid", "warn", "error");
+
+    if (stepDiff === 0) {
+      resultEl.classList.add("warn");
+      resultEl.innerHTML =
+        '<div class="result-status">เลือก Liquid คนละขั้นก่อนนะ</div>' +
+        '<div class="result-line">ตอนนี้เลือกเป็น <strong>' + LIQUIDS[targetIndex] +
+        '</strong> เหมือนกันทั้ง 2 ช่อง</div>';
+      return;
+    }
+
+    if (stepDiff < 0) {
+      resultEl.classList.add("error");
+      resultEl.innerHTML =
+        '<div class="result-status">สร้างย้อนขั้นไม่ได้</div>' +
+        '<div class="result-line"><strong>' + LIQUIDS[sourceIndex] +
+        '</strong> อยู่สูงกว่า <strong>' + LIQUIDS[targetIndex] + '</strong></div>';
+      return;
+    }
+
+    const requiredAmount = calculateRequiredAmount(sourceIndex, targetIndex);
+    resultEl.classList.add("valid");
+    resultEl.innerHTML =
+      '<div class="result-status">จับคู่สำเร็จ</div>' +
+      '<div class="result-amount">' + requiredAmount +
+      ' <small>ชิ้น</small></div>' +
+      '<div class="result-line">ต้องใช้ <strong>' + LIQUIDS[sourceIndex] +
+      '</strong> จำนวน <strong>' + requiredAmount + '</strong> ชิ้น</div>' +
+      '<div class="result-line">เพื่อสร้าง <strong>' + LIQUIDS[targetIndex] +
+      '</strong> จำนวน <strong>1</strong> ชิ้น</div>' +
+      '<div class="result-sub">ระยะห่าง: ' + stepDiff + ' ขั้น</div>' +
+      '<div class="path">' + buildPath(sourceIndex, targetIndex) + '</div>';
+  }
+
+  targetEl.addEventListener("change", renderResult);
+  sourceEl.addEventListener("change", renderResult);
+
+  initSelects();
+  renderDirectPairs();
+  renderResult();
+</script>
+</body>
+</html>
