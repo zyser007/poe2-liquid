@@ -35,10 +35,34 @@
     font-family: "Segoe UI", "Helvetica Neue", system-ui, -apple-system, "Noto Sans Thai", sans-serif;
     line-height: 1.6;
     min-height: 100vh;
-    padding: 28px 16px 72px;
+    padding: 22px 16px 72px;
   }
 
   .wrap { max-width: 760px; margin: 0 auto; }
+
+  /* ---------- Language bar ---------- */
+  .langbar { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+  .lang-toggle {
+    display: inline-flex;
+    background: var(--bg-inset);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 2px;
+  }
+  .lang-toggle button {
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    font-size: .82rem;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease;
+  }
+  .lang-toggle button.active { background: var(--gold); color: #1a1305; }
+  .lang-toggle button:not(.active):hover { color: var(--gold-soft); }
 
   header { text-align: center; margin-bottom: 26px; }
 
@@ -223,14 +247,6 @@
     color: var(--gold);
     font-weight: 700;
   }
-  .recipe .big-amount {
-    font-size: 2rem;
-    font-weight: 900;
-    color: var(--gold);
-    line-height: 1;
-    text-shadow: 0 0 20px rgba(212, 175, 55, 0.35);
-  }
-  .recipe .big-amount small { display:block; font-size: .7rem; color: var(--text-dim); font-weight: 600; letter-spacing: 1px; margin-top: 2px; }
 
   .result-line { font-size: 1rem; margin: 12px 0 2px; }
   .result-sub { color: var(--text-dim); font-size: 0.9rem; margin-top: 6px; }
@@ -270,7 +286,6 @@
   .path .pstep span { font-size: .82rem; color: var(--gold-soft); }
   .path .arrow { color: var(--text-dim); }
 
-  /* warn / error big icon */
   .glyph { font-size: 2.4rem; line-height: 1; margin-bottom: 6px; }
 
   /* ---------- Direct pairs ---------- */
@@ -296,29 +311,35 @@
   .note { color: var(--text-dim); font-size: 0.88rem; text-align: center; }
   .note strong { color: var(--gold-soft); }
 
-  /* scrollbar */
   .select-panel::-webkit-scrollbar { width: 8px; }
   .select-panel::-webkit-scrollbar-thumb { background: #3a2f1c; border-radius: 8px; }
 </style>
 </head>
 <body>
   <div class="wrap">
+    <div class="langbar">
+      <div class="lang-toggle" id="lang-toggle" role="group" aria-label="Language">
+        <button type="button" data-lang="th">TH</button>
+        <button type="button" data-lang="en">EN</button>
+      </div>
+    </div>
+
     <header>
       <h1>⚗️ POE2 Liquid Emotion Matcher</h1>
-      <p class="subtitle">คำนวณจำนวนวัตถุดิบที่ต้องใช้ในการสร้าง Liquid Emotion</p>
+      <p class="subtitle" id="subtitle"></p>
     </header>
 
     <section class="card">
       <div class="controls">
         <div>
-          <label id="target-label">Liquid ที่ต้องการสร้าง</label>
+          <label id="target-label"></label>
           <div class="select" id="target-select"></div>
         </div>
         <div class="swap">
-          <button id="swap" type="button" title="สลับ Target / Source" aria-label="สลับ Target และ Source">⇆</button>
+          <button id="swap" type="button">⇆</button>
         </div>
         <div>
-          <label id="source-label">Liquid ที่ใช้เป็นวัตถุดิบ</label>
+          <label id="source-label"></label>
           <div class="select" id="source-select"></div>
         </div>
       </div>
@@ -327,14 +348,11 @@
     <section class="card result" id="result" aria-live="polite"></section>
 
     <section class="card">
-      <h2>🔁 คู่อัปเกรดโดยตรง (Direct Upgrade Pairs)</h2>
+      <h2 id="pairs-title"></h2>
       <ul class="pairs" id="pairs"></ul>
     </section>
 
-    <p class="note">
-      กติกา: <strong>3 ชิ้นของขั้นก่อนหน้า = 1 ชิ้นของขั้นถัดไป</strong><br />
-      หากห่างกัน N ขั้น จะต้องใช้ <strong>3<sup>N</sup></strong> ชิ้น
-    </p>
+    <p class="note" id="note"></p>
   </div>
 
 <script>
@@ -352,9 +370,82 @@
 
   const spriteFor = (name) => "sprites/" + name.toLowerCase().replace(/\s+/g, "-") + ".png";
 
-  // ---------- State ----------
-  let targetIndex = LIQUIDS.indexOf("Liquid Disgust");
-  let sourceIndex = LIQUIDS.indexOf("Liquid Envy");
+  // ---------- i18n ----------
+  const I18N = {
+    th: {
+      htmlLang: "th",
+      subtitle: "คำนวณจำนวนวัตถุดิบที่ต้องใช้ในการสร้าง Liquid Emotion",
+      targetLabel: "Liquid ที่ต้องการสร้าง",
+      sourceLabel: "Liquid ที่ใช้เป็นวัตถุดิบ",
+      swapTitle: "สลับ Target / Source",
+      tier: (n) => "ขั้น " + n,
+      pairsTitle: "🔁 คู่อัปเกรดโดยตรง (Direct Upgrade Pairs)",
+      note: 'กติกา: <strong>3 ชิ้นของขั้นก่อนหน้า = 1 ชิ้นของขั้นถัดไป</strong><br />หากห่างกัน N ขั้น จะต้องใช้ <strong>3<sup>N</sup></strong> ชิ้น',
+      matchSuccess: "✦ จับคู่สำเร็จ ✦",
+      needLine: (src, amt, tgt) =>
+        'ต้องใช้ <strong>' + src + '</strong> จำนวน <strong>' + amt +
+        '</strong> ชิ้น เพื่อสร้าง <strong>' + tgt + '</strong> จำนวน <strong>1</strong> ชิ้น',
+      badge: (diff, amt) => 'ระยะห่าง ' + diff + ' ขั้น · 3^' + diff + ' = ' + amt,
+      sameTitle: "เลือก Liquid คนละขั้นก่อนนะ",
+      sameLine: (l) => 'ตอนนี้เลือกเป็น <strong>' + l + '</strong> เหมือนกันทั้ง 2 ช่อง',
+      reverseTitle: "สร้างย้อนขั้นไม่ได้",
+      reverseLine: (src, tgt) => '<strong>' + src + '</strong> อยู่สูงกว่า <strong>' + tgt + '</strong>'
+    },
+    en: {
+      htmlLang: "en",
+      subtitle: "Calculate how many source liquids are needed to create one target liquid",
+      targetLabel: "Liquid to create",
+      sourceLabel: "Liquid used as material",
+      swapTitle: "Swap target / source",
+      tier: (n) => "Tier " + n,
+      pairsTitle: "🔁 Direct Upgrade Pairs",
+      note: 'Rule: <strong>3 of the previous tier = 1 of the next tier</strong><br />N tiers apart requires <strong>3<sup>N</sup></strong> items',
+      matchSuccess: "✦ Match found ✦",
+      needLine: (src, amt, tgt) =>
+        'You need <strong>' + amt + '</strong>× <strong>' + src +
+        '</strong> to create <strong>1</strong>× <strong>' + tgt + '</strong>',
+      badge: (diff, amt) => diff + (diff > 1 ? ' tiers' : ' tier') + ' apart · 3^' + diff + ' = ' + amt,
+      sameTitle: "Pick two different tiers",
+      sameLine: (l) => 'Both fields are set to <strong>' + l + '</strong>',
+      reverseTitle: "Can't craft backwards",
+      reverseLine: (src, tgt) => '<strong>' + src + '</strong> is a higher tier than <strong>' + tgt + '</strong>'
+    }
+  };
+
+  // ---------- State + persistence ----------
+  const STORAGE_KEY = "poe2-liquid-state";
+
+  const DEFAULTS = {
+    target: "Liquid Despair",
+    source: "Liquid Disgust",
+    lang: "th"
+  };
+
+  let targetIndex, sourceIndex, lang;
+
+  function loadState() {
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+    catch (e) { saved = {}; }
+
+    const ti = LIQUIDS.indexOf(saved.target);
+    const si = LIQUIDS.indexOf(saved.source);
+    targetIndex = ti >= 0 ? ti : LIQUIDS.indexOf(DEFAULTS.target);
+    sourceIndex = si >= 0 ? si : LIQUIDS.indexOf(DEFAULTS.source);
+    lang = I18N[saved.lang] ? saved.lang : DEFAULTS.lang;
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        target: LIQUIDS[targetIndex],
+        source: LIQUIDS[sourceIndex],
+        lang: lang
+      }));
+    } catch (e) { /* storage unavailable — ignore */ }
+  }
+
+  const t = () => I18N[lang];
 
   const resultEl = document.getElementById("result");
   const pairsEl = document.getElementById("pairs");
@@ -382,7 +473,7 @@
       opt.innerHTML =
         '<img src="' + spriteFor(name) + '" alt="" loading="lazy" />' +
         '<span class="name">' + name + '</span>' +
-        '<span class="tier">ขั้น ' + (i + 1) + '</span>';
+        '<span class="tier"></span>';
       opt.addEventListener("click", () => {
         setValue(i);
         close();
@@ -407,7 +498,6 @@
     function toggle() { root.classList.contains("open") ? close() : open(); }
 
     trigger.addEventListener("click", toggle);
-
     trigger.addEventListener("keydown", (e) => {
       if (e.key === "ArrowDown") { e.preventDefault(); setValue(Math.min(LIQUIDS.length - 1, getValue() + 1)); }
       else if (e.key === "ArrowUp") { e.preventDefault(); setValue(Math.max(0, getValue() - 1)); }
@@ -423,7 +513,9 @@
         '<span class="name">' + name + '</span>' +
         '<span class="caret">▼</span>';
       panel.querySelectorAll(".option").forEach((o) => {
-        o.classList.toggle("selected", Number(o.dataset.index) === i);
+        const idx = Number(o.dataset.index);
+        o.classList.toggle("selected", idx === i);
+        o.querySelector(".tier").textContent = t().tier(idx + 1);
       });
     }
 
@@ -435,19 +527,25 @@
   const sourceSelect = createSelect("source-select", "source-label",
     () => sourceIndex, (i) => { sourceIndex = i; update(); });
 
-  // Close panels on outside click
   document.addEventListener("click", (e) => {
     if (!targetSelect.root.contains(e.target)) targetSelect.close();
     if (!sourceSelect.root.contains(e.target)) sourceSelect.close();
   });
 
-  // Swap button
   document.getElementById("swap").addEventListener("click", () => {
     [targetIndex, sourceIndex] = [sourceIndex, targetIndex];
     update();
   });
 
-  // ---------- Direct pairs ----------
+  // Language toggle
+  document.getElementById("lang-toggle").addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-lang]");
+    if (!btn) return;
+    lang = btn.dataset.lang;
+    update();
+  });
+
+  // ---------- Direct pairs (language-independent) ----------
   function renderDirectPairs() {
     for (let i = 0; i < LIQUIDS.length - 1; i++) {
       const li = document.createElement("li");
@@ -480,6 +578,7 @@
   }
 
   function renderResult() {
+    const d = t();
     const stepDiff = targetIndex - sourceIndex;
     resultEl.classList.remove("valid", "warn", "error");
 
@@ -487,9 +586,8 @@
       resultEl.classList.add("warn");
       resultEl.innerHTML =
         '<div class="glyph">🤔</div>' +
-        '<div class="result-status">เลือก Liquid คนละขั้นก่อนนะ</div>' +
-        '<div class="result-line">ตอนนี้เลือกเป็น <strong>' + LIQUIDS[targetIndex] +
-        '</strong> เหมือนกันทั้ง 2 ช่อง</div>';
+        '<div class="result-status">' + d.sameTitle + '</div>' +
+        '<div class="result-line">' + d.sameLine(LIQUIDS[targetIndex]) + '</div>';
       return;
     }
 
@@ -497,16 +595,15 @@
       resultEl.classList.add("error");
       resultEl.innerHTML =
         '<div class="glyph">⛔</div>' +
-        '<div class="result-status">สร้างย้อนขั้นไม่ได้</div>' +
-        '<div class="result-line"><strong>' + LIQUIDS[sourceIndex] +
-        '</strong> อยู่สูงกว่า <strong>' + LIQUIDS[targetIndex] + '</strong></div>';
+        '<div class="result-status">' + d.reverseTitle + '</div>' +
+        '<div class="result-line">' + d.reverseLine(LIQUIDS[sourceIndex], LIQUIDS[targetIndex]) + '</div>';
       return;
     }
 
     const amount = calculateRequiredAmount(sourceIndex, targetIndex);
     resultEl.classList.add("valid");
     resultEl.innerHTML =
-      '<div class="result-status">✦ จับคู่สำเร็จ ✦</div>' +
+      '<div class="result-status">' + d.matchSuccess + '</div>' +
       '<div class="recipe">' +
         '<div class="liquid">' +
           '<img src="' + spriteFor(LIQUIDS[sourceIndex]) + '" alt="' + LIQUIDS[sourceIndex] + '" />' +
@@ -520,20 +617,39 @@
           '<span class="lname">' + LIQUIDS[targetIndex] + '</span>' +
         '</div>' +
       '</div>' +
-      '<div class="result-line">ต้องใช้ <strong>' + LIQUIDS[sourceIndex] +
-      '</strong> จำนวน <strong>' + amount + '</strong> ชิ้น เพื่อสร้าง <strong>' +
-      LIQUIDS[targetIndex] + '</strong> จำนวน <strong>1</strong> ชิ้น</div>' +
-      '<div class="badge">ระยะห่าง ' + stepDiff + ' ขั้น · 3^' + stepDiff + ' = ' + amount + '</div>' +
+      '<div class="result-line">' + d.needLine(LIQUIDS[sourceIndex], amount, LIQUIDS[targetIndex]) + '</div>' +
+      '<div class="badge">' + d.badge(stepDiff, amount) + '</div>' +
       '<div class="path">' + buildPath(sourceIndex, targetIndex) + '</div>';
+  }
+
+  function applyStaticText() {
+    const d = t();
+    document.documentElement.lang = d.htmlLang;
+    document.getElementById("subtitle").textContent = d.subtitle;
+    document.getElementById("target-label").textContent = d.targetLabel;
+    document.getElementById("source-label").textContent = d.sourceLabel;
+    document.getElementById("pairs-title").innerHTML = d.pairsTitle;
+    document.getElementById("note").innerHTML = d.note;
+
+    const swap = document.getElementById("swap");
+    swap.title = d.swapTitle;
+    swap.setAttribute("aria-label", d.swapTitle);
+
+    document.querySelectorAll("#lang-toggle button").forEach((b) => {
+      b.classList.toggle("active", b.dataset.lang === lang);
+    });
   }
 
   // ---------- Update everything ----------
   function update() {
+    applyStaticText();
     targetSelect.render();
     sourceSelect.render();
     renderResult();
+    saveState();
   }
 
+  loadState();
   renderDirectPairs();
   update();
 </script>
