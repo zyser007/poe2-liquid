@@ -4,6 +4,11 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>POE2 Liquid Emotion Matcher</title>
+<meta name="theme-color" content="#0c0a07" />
+<meta name="description" content="คำนวณจำนวนวัตถุดิบที่ต้องใช้ในการสร้าง POE2 Liquid Emotion" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="icon" href="icon-192.png" />
 <style>
   :root {
     --bg: #0c0a07;
@@ -22,7 +27,6 @@
   }
 
   * { box-sizing: border-box; }
-
   html, body { -webkit-tap-highlight-color: transparent; }
 
   body {
@@ -35,13 +39,26 @@
     font-family: "Segoe UI", "Helvetica Neue", system-ui, -apple-system, "Noto Sans Thai", sans-serif;
     line-height: 1.6;
     min-height: 100vh;
-    padding: 22px 16px 72px;
+    padding: 22px 16px 80px;
   }
 
   .wrap { max-width: 760px; margin: 0 auto; }
 
-  /* ---------- Language bar ---------- */
-  .langbar { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+  /* ---------- Top bar ---------- */
+  .topbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; }
+  #install-btn {
+    display: none;
+    border: 1px solid var(--border);
+    background: var(--bg-inset);
+    color: var(--gold-soft);
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: .8rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  #install-btn:hover { border-color: var(--gold); }
+
   .lang-toggle {
     display: inline-flex;
     background: var(--bg-inset);
@@ -49,31 +66,22 @@
     border-radius: 999px;
     padding: 3px;
     gap: 2px;
+    margin-left: auto;
   }
   .lang-toggle button {
-    border: none;
-    background: transparent;
-    color: var(--text-dim);
-    font-size: .82rem;
-    font-weight: 700;
-    padding: 4px 14px;
-    border-radius: 999px;
-    cursor: pointer;
-    transition: background .15s ease, color .15s ease;
+    border: none; background: transparent; color: var(--text-dim);
+    font-size: .82rem; font-weight: 700; padding: 4px 14px; border-radius: 999px;
+    cursor: pointer; transition: background .15s ease, color .15s ease;
   }
   .lang-toggle button.active { background: var(--gold); color: #1a1305; }
   .lang-toggle button:not(.active):hover { color: var(--gold-soft); }
 
-  header { text-align: center; margin-bottom: 26px; }
-
+  header { text-align: center; margin-bottom: 24px; }
   h1 {
     font-size: clamp(1.5rem, 5vw, 2.1rem);
-    margin: 0 0 8px;
-    color: var(--gold);
-    letter-spacing: 0.5px;
+    margin: 0 0 8px; color: var(--gold); letter-spacing: 0.5px;
     text-shadow: 0 0 22px rgba(212, 175, 55, 0.3);
   }
-
   .subtitle { color: var(--text-dim); font-size: 0.95rem; margin: 0; }
 
   .card {
@@ -85,38 +93,21 @@
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   }
 
+  label {
+    display: block; font-size: 0.8rem; color: var(--gold-soft);
+    margin-bottom: 8px; font-weight: 700; letter-spacing: 0.4px;
+  }
+
   /* ---------- Controls ---------- */
   .controls { display: grid; gap: 18px; }
   @media (min-width: 600px) {
-    .controls {
-      grid-template-columns: 1fr auto 1fr;
-      align-items: end;
-    }
+    .controls { grid-template-columns: 1fr auto 1fr; align-items: end; }
   }
-
-  label {
-    display: block;
-    font-size: 0.8rem;
-    color: var(--gold-soft);
-    margin-bottom: 8px;
-    font-weight: 700;
-    letter-spacing: 0.4px;
-  }
-
-  .swap {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding-bottom: 6px;
-  }
+  .swap { display: flex; align-items: center; justify-content: center; padding-bottom: 6px; }
   .swap button {
-    width: 42px; height: 42px;
-    border-radius: 50%;
-    border: 1px solid var(--border);
-    background: var(--bg-inset);
-    color: var(--gold);
-    font-size: 1.1rem;
-    cursor: pointer;
+    width: 42px; height: 42px; border-radius: 50%;
+    border: 1px solid var(--border); background: var(--bg-inset);
+    color: var(--gold); font-size: 1.1rem; cursor: pointer;
     transition: transform .15s ease, border-color .15s ease, background .15s ease;
   }
   .swap button:hover { border-color: var(--gold); background: #1a150d; }
@@ -127,73 +118,43 @@
     .swap button:active { transform: rotate(270deg) scale(.92); }
   }
 
+  .qty-wrap { margin-top: 16px; }
+  input[type="number"] {
+    width: 100%; padding: 10px 12px; background: var(--bg-inset);
+    border: 1px solid var(--border); border-radius: 11px; color: var(--text);
+    font-size: 1rem;
+  }
+  input[type="number"]:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,175,55,.18); }
+
   /* ---------- Custom select ---------- */
   .select { position: relative; }
-
   .select-trigger {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 12px;
-    background: var(--bg-inset);
-    border: 1px solid var(--border);
-    border-radius: 11px;
-    color: var(--text);
-    font-size: 1rem;
-    cursor: pointer;
-    text-align: left;
+    width: 100%; display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; background: var(--bg-inset); border: 1px solid var(--border);
+    border-radius: 11px; color: var(--text); font-size: 1rem; cursor: pointer; text-align: left;
     transition: border-color .15s ease, box-shadow .15s ease;
   }
   .select-trigger:hover { border-color: #50401f; }
-  .select.open .select-trigger,
-  .select-trigger:focus-visible {
-    outline: none;
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.18);
+  .select.open .select-trigger, .select-trigger:focus-visible {
+    outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.18);
   }
-
   .select-trigger img {
-    width: 38px; height: 38px;
-    flex: 0 0 auto;
-    border-radius: 8px;
-    background: #07060c;
-    border: 1px solid var(--border-soft);
+    width: 38px; height: 38px; flex: 0 0 auto; border-radius: 8px;
+    background: #07060c; border: 2px solid var(--border-soft);
   }
   .select-trigger .name { flex: 1; font-weight: 600; }
   .select-trigger .caret { color: var(--gold); font-size: .7rem; transition: transform .2s ease; }
   .select.open .select-trigger .caret { transform: rotate(180deg); }
 
   .select-panel {
-    position: absolute;
-    z-index: 30;
-    top: calc(100% + 6px);
-    left: 0; right: 0;
-    max-height: 320px;
-    overflow-y: auto;
-    background: #14100a;
-    border: 1px solid var(--gold);
-    border-radius: 12px;
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
-    padding: 6px;
-    display: none;
+    position: absolute; z-index: 30; top: calc(100% + 6px); left: 0; right: 0;
+    max-height: 320px; overflow-y: auto; background: #14100a;
+    border: 1px solid var(--gold); border-radius: 12px;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6); padding: 6px; display: none;
   }
   .select.open .select-panel { display: block; }
-
-  .option {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 8px 10px;
-    border-radius: 9px;
-    cursor: pointer;
-  }
-  .option img {
-    width: 34px; height: 34px;
-    border-radius: 7px;
-    background: #07060c;
-    border: 1px solid var(--border-soft);
-  }
+  .option { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 9px; cursor: pointer; }
+  .option img { width: 34px; height: 34px; border-radius: 7px; background: #07060c; border: 2px solid var(--border-soft); }
   .option .name { font-size: .95rem; }
   .option .tier { margin-left: auto; color: var(--text-dim); font-size: .72rem; }
   .option:hover, .option.active { background: rgba(212, 175, 55, 0.14); }
@@ -205,108 +166,89 @@
   .result.valid { border-color: rgba(127, 207, 131, 0.45); }
   .result.warn  { border-color: rgba(230, 179, 74, 0.45); }
   .result.error { border-color: rgba(224, 123, 133, 0.45); }
+  @keyframes pop { from { opacity: .45; transform: scale(.985); } to { opacity: 1; transform: scale(1); } }
+  .result.pop { animation: pop .22s ease; }
 
-  .result-status {
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 14px;
-    font-weight: 800;
-  }
+  .result-status { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 14px; font-weight: 800; }
   .valid .result-status { color: var(--green); }
   .warn  .result-status { color: var(--amber); }
   .error .result-status { color: var(--red); }
 
-  /* recipe row: source xN  ->  target */
-  .recipe {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-    flex-wrap: wrap;
-    margin: 6px 0 4px;
-  }
-  .recipe .liquid {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    min-width: 92px;
-  }
-  .recipe .liquid img {
-    width: 64px; height: 64px;
-    border-radius: 12px;
-    background: #07060c;
-    border: 1px solid var(--border);
-    box-shadow: 0 0 18px rgba(212, 175, 55, 0.12);
-  }
-  .recipe .liquid .lname { font-size: .82rem; color: var(--text-dim); max-width: 110px; }
+  .recipe { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; margin: 6px 0 4px; }
+  .recipe .liquid { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 96px; }
+  .recipe .liquid img { width: 64px; height: 64px; border-radius: 12px; background: #07060c; border: 2px solid var(--border); }
+  .recipe .liquid .lname { font-size: .82rem; color: var(--text-dim); max-width: 120px; }
   .recipe .qty { font-size: 1.05rem; font-weight: 800; color: var(--gold); }
-  .recipe .op {
-    font-size: 1.6rem;
-    color: var(--gold);
-    font-weight: 700;
-  }
+  .recipe .op { font-size: 1.6rem; color: var(--gold); font-weight: 700; }
 
   .result-line { font-size: 1rem; margin: 12px 0 2px; }
-  .result-sub { color: var(--text-dim); font-size: 0.9rem; margin-top: 6px; }
-
   .badge {
-    display: inline-block;
-    margin-top: 10px;
-    padding: 3px 12px;
-    border-radius: 999px;
-    background: rgba(212, 175, 55, 0.12);
-    border: 1px solid var(--border);
-    color: var(--gold-soft);
-    font-size: .82rem;
-    font-weight: 600;
+    display: inline-block; margin-top: 10px; padding: 3px 12px; border-radius: 999px;
+    background: rgba(212, 175, 55, 0.12); border: 1px solid var(--border);
+    color: var(--gold-soft); font-size: .82rem; font-weight: 600;
   }
 
   .path {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px dashed var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 6px 4px;
+    margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--border);
+    display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px 4px;
   }
-  .path .pstep {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--bg-inset);
-    border: 1px solid var(--border-soft);
-    border-radius: 8px;
-    padding: 4px 8px;
-  }
-  .path .pstep img { width: 26px; height: 26px; border-radius: 5px; }
+  .path .pstep { display: flex; align-items: center; gap: 6px; background: var(--bg-inset); border: 1px solid var(--border-soft); border-radius: 8px; padding: 4px 8px; }
+  .path .pstep img { width: 26px; height: 26px; border-radius: 5px; border: 2px solid var(--border-soft); }
   .path .pstep span { font-size: .82rem; color: var(--gold-soft); }
   .path .arrow { color: var(--text-dim); }
 
   .glyph { font-size: 2.4rem; line-height: 1; margin-bottom: 6px; }
 
-  /* ---------- Direct pairs ---------- */
-  h2 { font-size: 1.05rem; color: var(--gold); margin: 0 0 14px; display:flex; align-items:center; gap:8px; }
+  .actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+  .actions button {
+    border: 1px solid var(--border); background: var(--bg-inset); color: var(--gold-soft);
+    border-radius: 10px; padding: 8px 16px; font-size: .88rem; font-weight: 700; cursor: pointer;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .actions button:hover { border-color: var(--gold); background: #1a150d; }
+
+  /* ---------- Calculators ---------- */
+  h2 { font-size: 1.05rem; color: var(--gold); margin: 0 0 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  h3 { font-size: .95rem; color: var(--gold-soft); margin: 4px 0 12px; }
+  .calc-out {
+    margin-top: 12px; padding: 12px 14px; border-radius: 10px;
+    background: var(--bg-inset); border: 1px solid var(--border-soft); font-size: .95rem;
+  }
+  .calc-out .big { color: var(--gold); font-weight: 800; font-size: 1.15rem; }
+  .calc-out.muted { color: var(--text-dim); }
+  .calc-grid { display: grid; gap: 12px; }
+  @media (min-width: 520px) { .calc-grid { grid-template-columns: 1fr 1fr; } }
+  hr { border: none; border-top: 1px solid var(--border-soft); margin: 18px 0; }
+  .cheaper { color: var(--green); font-weight: 800; }
+  .pricier { color: var(--red); }
+
+  /* ---------- Tables / pairs ---------- */
+  .tbl { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  .tbl th, .tbl td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border-soft); }
+  .tbl th { color: var(--text-dim); font-weight: 600; font-size: .78rem; text-transform: uppercase; letter-spacing: .5px; }
+  .tbl td.amt { text-align: right; font-weight: 700; color: var(--gold); white-space: nowrap; }
+  .tbl tr.clickable { cursor: pointer; }
+  .tbl tr.clickable:hover { background: rgba(212,175,55,.08); }
+  .tbl tr.self td { color: var(--text-dim); }
+  .tbl tr.higher td { color: #6b6356; }
+  .tbl .liq { display: flex; align-items: center; gap: 8px; }
+  .tbl .liq img { width: 26px; height: 26px; border-radius: 5px; background: #07060c; border: 2px solid var(--border-soft); }
+  .tbl tr.is-target td { background: rgba(212,175,55,.06); }
 
   .pairs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .pairs li {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 12px;
-    background: var(--bg-inset);
-    border: 1px solid var(--border-soft);
-    border-radius: 10px;
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+    background: var(--bg-inset); border: 1px solid var(--border-soft); border-radius: 10px;
+    cursor: pointer; transition: border-color .15s ease, background .15s ease;
   }
-  .pairs img { width: 32px; height: 32px; border-radius: 6px; background:#07060c; }
+  .pairs li:hover { border-color: var(--gold); background: #1a150d; }
+  .pairs img { width: 32px; height: 32px; border-radius: 6px; background: #07060c; border: 2px solid var(--border-soft); }
   .pairs .from { color: var(--text); font-size: .9rem; }
   .pairs .x3 { color: var(--gold); font-weight: 800; font-size: .9rem; }
   .pairs .arrow { color: var(--text-dim); }
   .pairs .to { color: var(--gold-soft); font-weight: 700; font-size: .9rem; }
   .pairs .spacer { flex: 1; }
+  .hint { color: var(--text-dim); font-size: .8rem; font-weight: 500; }
 
   .note { color: var(--text-dim); font-size: 0.88rem; text-align: center; }
   .note strong { color: var(--gold-soft); }
@@ -317,7 +259,8 @@
 </head>
 <body>
   <div class="wrap">
-    <div class="langbar">
+    <div class="topbar">
+      <button id="install-btn" type="button"></button>
       <div class="lang-toggle" id="lang-toggle" role="group" aria-label="Language">
         <button type="button" data-lang="th">TH</button>
         <button type="button" data-lang="en">EN</button>
@@ -335,17 +278,49 @@
           <label id="target-label"></label>
           <div class="select" id="target-select"></div>
         </div>
-        <div class="swap">
-          <button id="swap" type="button">⇆</button>
-        </div>
+        <div class="swap"><button id="swap" type="button">⇆</button></div>
         <div>
           <label id="source-label"></label>
           <div class="select" id="source-select"></div>
         </div>
       </div>
+      <div class="qty-wrap">
+        <label id="qty-label" for="qty"></label>
+        <input id="qty" type="number" min="1" step="1" value="1" inputmode="numeric" />
+      </div>
     </section>
 
     <section class="card result" id="result" aria-live="polite"></section>
+
+    <section class="card" id="calc-card">
+      <h2 id="calc-title"></h2>
+      <label id="owned-label" for="owned"></label>
+      <input id="owned" type="number" min="0" step="1" placeholder="0" inputmode="numeric" />
+      <div class="calc-out muted" id="craft-out"></div>
+
+      <hr />
+
+      <h3 id="price-title"></h3>
+      <div class="calc-grid">
+        <div>
+          <label id="price-source-label" for="price-source"></label>
+          <input id="price-source" type="number" min="0" step="any" placeholder="0" inputmode="decimal" />
+        </div>
+        <div>
+          <label id="price-target-label" for="price-target"></label>
+          <input id="price-target" type="number" min="0" step="any" placeholder="0" inputmode="decimal" />
+        </div>
+      </div>
+      <div class="calc-out muted" id="price-out"></div>
+    </section>
+
+    <section class="card">
+      <h2 id="paths-title"></h2>
+      <table class="tbl">
+        <thead><tr><th id="th-liquid"></th><th class="amt" id="th-need"></th></tr></thead>
+        <tbody id="paths-body"></tbody>
+      </table>
+    </section>
 
     <section class="card">
       <h2 id="pairs-title"></h2>
@@ -368,7 +343,15 @@
     "Concentrated Liquid Suffering"
   ];
 
+  // Per-tier accent colors (low → high)
+  const TIER_COLORS = [
+    "#6fa8dc", "#76c7c0", "#8fce7e", "#c9d36b", "#e8c969",
+    "#e0a93b", "#dd7e4f", "#d9606b", "#b65fd1"
+  ];
+
   const spriteFor = (name) => "sprites/" + name.toLowerCase().replace(/\s+/g, "-") + ".png";
+  const tierColor = (i) => TIER_COLORS[i] || "var(--border)";
+  const fmt = (n) => Number(n).toLocaleString("en-US");
 
   // ---------- i18n ----------
   const I18N = {
@@ -377,83 +360,159 @@
       subtitle: "คำนวณจำนวนวัตถุดิบที่ต้องใช้ในการสร้าง Liquid Emotion",
       targetLabel: "Liquid ที่ต้องการสร้าง",
       sourceLabel: "Liquid ที่ใช้เป็นวัตถุดิบ",
+      qtyLabel: "จำนวนที่ต้องการสร้าง",
       swapTitle: "สลับ Target / Source",
+      install: "⬇ ติดตั้งแอป",
       tier: (n) => "ขั้น " + n,
-      pairsTitle: "🔁 คู่อัปเกรดโดยตรง (Direct Upgrade Pairs)",
+      pairsTitle: "🔁 คู่อัปเกรดโดยตรง",
+      pairsHint: "(กดเพื่อเลือก)",
       note: 'กติกา: <strong>3 ชิ้นของขั้นก่อนหน้า = 1 ชิ้นของขั้นถัดไป</strong><br />หากห่างกัน N ขั้น จะต้องใช้ <strong>3<sup>N</sup></strong> ชิ้น',
       matchSuccess: "✦ จับคู่สำเร็จ ✦",
-      needLine: (src, amt, tgt) =>
-        'ต้องใช้ <strong>' + src + '</strong> จำนวน <strong>' + amt +
-        '</strong> ชิ้น เพื่อสร้าง <strong>' + tgt + '</strong> จำนวน <strong>1</strong> ชิ้น',
-      badge: (diff, amt) => 'ระยะห่าง ' + diff + ' ขั้น · 3^' + diff + ' = ' + amt,
+      needLine: (src, amt, tgt, qty) =>
+        'ต้องใช้ <strong>' + src + '</strong> จำนวน <strong>' + fmt(amt) +
+        '</strong> ชิ้น เพื่อสร้าง <strong>' + tgt + '</strong> จำนวน <strong>' + fmt(qty) + '</strong> ชิ้น',
+      badge: (diff, amt) => 'ระยะห่าง ' + diff + ' ขั้น · 3^' + diff + ' = ' + fmt(amt) + ' /ชิ้น',
       sameTitle: "เลือก Liquid คนละขั้นก่อนนะ",
       sameLine: (l) => 'ตอนนี้เลือกเป็น <strong>' + l + '</strong> เหมือนกันทั้ง 2 ช่อง',
       reverseTitle: "สร้างย้อนขั้นไม่ได้",
-      reverseLine: (src, tgt) => '<strong>' + src + '</strong> อยู่สูงกว่า <strong>' + tgt + '</strong>'
+      reverseLine: (src, tgt) => '<strong>' + src + '</strong> อยู่สูงกว่า <strong>' + tgt + '</strong>',
+      copyBtn: "📋 คัดลอกผลลัพธ์",
+      copied: "✓ คัดลอกแล้ว",
+      shareBtn: "🔗 แชร์ลิงก์",
+      shareCopied: "✓ คัดลอกลิงก์แล้ว",
+      copyText: (src, amt, tgt, qty, diff) =>
+        "POE2 Liquid: ใช้ " + src + " × " + fmt(amt) + " → สร้าง " + tgt + " × " + fmt(qty) +
+        " (ห่าง " + diff + " ขั้น)",
+      calcTitle: "🧮 มีวัตถุดิบอยู่เท่าไหร่?",
+      ownedLabel: (src) => "จำนวน " + src + " ที่มี",
+      craftPick: "เลือกคู่ที่อัปเกรดได้ก่อน (Source ต้องต่ำกว่า Target)",
+      craftResult: (n, tgt) => 'สร้าง <span class="big">' + tgt + ' × ' + fmt(n) + '</span> ได้',
+      craftLeftover: (r, src) => ' · เหลือ ' + src + " × " + fmt(r),
+      priceTitle: "💰 เทียบราคา: คราฟต์เอง vs ซื้อตรง",
+      priceSourceLabel: (src) => "ราคา " + src + " /ชิ้น",
+      priceTargetLabel: (tgt) => "ราคา " + tgt + " /ชิ้น",
+      pricePick: "ใส่ราคาทั้งสองช่องเพื่อเทียบ",
+      priceCraft: (c) => "คราฟต์เอง: " + fmt(c),
+      priceBuy: (c) => "ซื้อตรง: " + fmt(c),
+      cheaperCraft: "→ คราฟต์เองถูกกว่า",
+      cheaperBuy: "→ ซื้อตรงถูกกว่า",
+      priceEqual: "→ ราคาเท่ากัน",
+      perTarget: (tgt) => "ต่อ 1 " + tgt,
+      pathsTitle: (tgt, qty) => "🗺️ ทุกเส้นทางสู่ " + tgt + (qty > 1 ? " × " + fmt(qty) : ""),
+      thLiquid: "วัตถุดิบ",
+      thNeed: "ต้องใช้",
+      selfRow: "— ตัวมันเอง",
+      higherRow: "ขั้นสูงกว่า"
     },
     en: {
       htmlLang: "en",
       subtitle: "Calculate how many source liquids are needed to create one target liquid",
       targetLabel: "Liquid to create",
       sourceLabel: "Liquid used as material",
+      qtyLabel: "Quantity to create",
       swapTitle: "Swap target / source",
+      install: "⬇ Install app",
       tier: (n) => "Tier " + n,
       pairsTitle: "🔁 Direct Upgrade Pairs",
+      pairsHint: "(tap to select)",
       note: 'Rule: <strong>3 of the previous tier = 1 of the next tier</strong><br />N tiers apart requires <strong>3<sup>N</sup></strong> items',
       matchSuccess: "✦ Match found ✦",
-      needLine: (src, amt, tgt) =>
-        'You need <strong>' + amt + '</strong>× <strong>' + src +
-        '</strong> to create <strong>1</strong>× <strong>' + tgt + '</strong>',
-      badge: (diff, amt) => diff + (diff > 1 ? ' tiers' : ' tier') + ' apart · 3^' + diff + ' = ' + amt,
+      needLine: (src, amt, tgt, qty) =>
+        'You need <strong>' + fmt(amt) + '</strong>× <strong>' + src +
+        '</strong> to create <strong>' + fmt(qty) + '</strong>× <strong>' + tgt + '</strong>',
+      badge: (diff, amt) => diff + (diff > 1 ? ' tiers' : ' tier') + ' apart · 3^' + diff + ' = ' + fmt(amt) + ' /ea',
       sameTitle: "Pick two different tiers",
       sameLine: (l) => 'Both fields are set to <strong>' + l + '</strong>',
       reverseTitle: "Can't craft backwards",
-      reverseLine: (src, tgt) => '<strong>' + src + '</strong> is a higher tier than <strong>' + tgt + '</strong>'
+      reverseLine: (src, tgt) => '<strong>' + src + '</strong> is a higher tier than <strong>' + tgt + '</strong>',
+      copyBtn: "📋 Copy result",
+      copied: "✓ Copied",
+      shareBtn: "🔗 Share link",
+      shareCopied: "✓ Link copied",
+      copyText: (src, amt, tgt, qty, diff) =>
+        "POE2 Liquid: " + fmt(amt) + "× " + src + " → " + fmt(qty) + "× " + tgt +
+        " (" + diff + " tiers apart)",
+      calcTitle: "🧮 How much material do you have?",
+      ownedLabel: (src) => "Amount of " + src + " owned",
+      craftPick: "Pick an upgradable pair first (source must be below target).",
+      craftResult: (n, tgt) => 'You can craft <span class="big">' + fmt(n) + '× ' + tgt + '</span>',
+      craftLeftover: (r, src) => ' · ' + fmt(r) + "× " + src + " left over",
+      priceTitle: "💰 Compare: craft vs buy",
+      priceSourceLabel: (src) => src + " price /ea",
+      priceTargetLabel: (tgt) => tgt + " price /ea",
+      pricePick: "Enter both prices to compare.",
+      priceCraft: (c) => "Craft it: " + fmt(c),
+      priceBuy: (c) => "Buy direct: " + fmt(c),
+      cheaperCraft: "→ Crafting is cheaper",
+      cheaperBuy: "→ Buying direct is cheaper",
+      priceEqual: "→ Same price",
+      perTarget: (tgt) => "per 1 " + tgt,
+      pathsTitle: (tgt, qty) => "🗺️ All paths to " + tgt + (qty > 1 ? " × " + fmt(qty) : ""),
+      thLiquid: "Material",
+      thNeed: "Needed",
+      selfRow: "— itself",
+      higherRow: "higher tier"
     }
   };
 
   // ---------- State + persistence ----------
   const STORAGE_KEY = "poe2-liquid-state";
+  const DEFAULTS = { target: "Liquid Despair", source: "Liquid Disgust", lang: "th", qty: 1 };
 
-  const DEFAULTS = {
-    target: "Liquid Despair",
-    source: "Liquid Disgust",
-    lang: "th"
-  };
+  let targetIndex, sourceIndex, lang, targetQty;
 
-  let targetIndex, sourceIndex, lang;
+  function clampQty(v) {
+    v = Math.floor(Number(v));
+    if (!isFinite(v) || v < 1) v = 1;
+    if (v > 1e9) v = 1e9;
+    return v;
+  }
 
   function loadState() {
     let saved = {};
-    try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
-    catch (e) { saved = {}; }
+    try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch (e) { saved = {}; }
 
-    const ti = LIQUIDS.indexOf(saved.target);
-    const si = LIQUIDS.indexOf(saved.source);
-    targetIndex = ti >= 0 ? ti : LIQUIDS.indexOf(DEFAULTS.target);
-    sourceIndex = si >= 0 ? si : LIQUIDS.indexOf(DEFAULTS.source);
-    lang = I18N[saved.lang] ? saved.lang : DEFAULTS.lang;
+    const params = new URLSearchParams(location.search);
+    const pT = params.get("t"), pS = params.get("s"), pQ = params.get("q"), pL = params.get("lang");
+
+    const idxFrom = (param, savedName, defName) => {
+      if (param !== null && /^\d+$/.test(param)) {
+        const n = Number(param);
+        if (n >= 0 && n < LIQUIDS.length) return n;
+      }
+      const si = LIQUIDS.indexOf(savedName);
+      return si >= 0 ? si : LIQUIDS.indexOf(defName);
+    };
+
+    targetIndex = idxFrom(pT, saved.target, DEFAULTS.target);
+    sourceIndex = idxFrom(pS, saved.source, DEFAULTS.source);
+    lang = I18N[pL] ? pL : (I18N[saved.lang] ? saved.lang : DEFAULTS.lang);
+    targetQty = clampQty(pQ !== null ? pQ : (saved.qty != null ? saved.qty : DEFAULTS.qty));
   }
 
-  function saveState() {
+  function persist() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        target: LIQUIDS[targetIndex],
-        source: LIQUIDS[sourceIndex],
-        lang: lang
+        target: LIQUIDS[targetIndex], source: LIQUIDS[sourceIndex], lang: lang, qty: targetQty
       }));
-    } catch (e) { /* storage unavailable — ignore */ }
+    } catch (e) { /* ignore */ }
+    // Keep the URL in sync so it's shareable / bookmarkable.
+    const qs = "?t=" + targetIndex + "&s=" + sourceIndex + "&q=" + targetQty + "&lang=" + lang;
+    try { history.replaceState(null, "", qs); } catch (e) { /* ignore */ }
   }
 
   const t = () => I18N[lang];
 
   const resultEl = document.getElementById("result");
   const pairsEl = document.getElementById("pairs");
+  const qtyInput = document.getElementById("qty");
+  const ownedInput = document.getElementById("owned");
+  const priceSourceInput = document.getElementById("price-source");
+  const priceTargetInput = document.getElementById("price-target");
 
-  // ---------- Custom select component ----------
+  // ---------- Custom select ----------
   function createSelect(rootId, labelId, getValue, setValue) {
     const root = document.getElementById(rootId);
-
     const trigger = document.createElement("button");
     trigger.type = "button";
     trigger.className = "select-trigger";
@@ -471,14 +530,9 @@
       opt.setAttribute("role", "option");
       opt.dataset.index = i;
       opt.innerHTML =
-        '<img src="' + spriteFor(name) + '" alt="" loading="lazy" />' +
-        '<span class="name">' + name + '</span>' +
-        '<span class="tier"></span>';
-      opt.addEventListener("click", () => {
-        setValue(i);
-        close();
-        trigger.focus();
-      });
+        '<img src="' + spriteFor(name) + '" alt="" loading="lazy" style="border-color:' + tierColor(i) + '" />' +
+        '<span class="name">' + name + '</span><span class="tier"></span>';
+      opt.addEventListener("click", () => { setValue(i); close(); trigger.focus(); });
       panel.appendChild(opt);
     });
 
@@ -491,10 +545,7 @@
       const sel = panel.querySelector(".option.selected");
       if (sel) sel.scrollIntoView({ block: "nearest" });
     }
-    function close() {
-      root.classList.remove("open");
-      trigger.setAttribute("aria-expanded", "false");
-    }
+    function close() { root.classList.remove("open"); trigger.setAttribute("aria-expanded", "false"); }
     function toggle() { root.classList.contains("open") ? close() : open(); }
 
     trigger.addEventListener("click", toggle);
@@ -509,9 +560,8 @@
       const i = getValue();
       const name = LIQUIDS[i];
       trigger.innerHTML =
-        '<img src="' + spriteFor(name) + '" alt="" />' +
-        '<span class="name">' + name + '</span>' +
-        '<span class="caret">▼</span>';
+        '<img src="' + spriteFor(name) + '" alt="" style="border-color:' + tierColor(i) + '" />' +
+        '<span class="name">' + name + '</span><span class="caret">▼</span>';
       panel.querySelectorAll(".option").forEach((o) => {
         const idx = Number(o.dataset.index);
         o.classList.toggle("selected", idx === i);
@@ -537,7 +587,6 @@
     update();
   });
 
-  // Language toggle
   document.getElementById("lang-toggle").addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-lang]");
     if (!btn) return;
@@ -545,110 +594,259 @@
     update();
   });
 
-  // ---------- Direct pairs (language-independent) ----------
-  function renderDirectPairs() {
-    for (let i = 0; i < LIQUIDS.length - 1; i++) {
-      const li = document.createElement("li");
-      li.innerHTML =
-        '<img src="' + spriteFor(LIQUIDS[i]) + '" alt="" loading="lazy" />' +
-        '<span class="from">' + LIQUIDS[i] + '</span>' +
-        '<span class="x3">× 3</span>' +
-        '<span class="spacer"></span>' +
-        '<span class="arrow">→</span>' +
-        '<img src="' + spriteFor(LIQUIDS[i + 1]) + '" alt="" loading="lazy" />' +
-        '<span class="to">' + LIQUIDS[i + 1] + '</span>';
-      pairsEl.appendChild(li);
-    }
-  }
+  qtyInput.addEventListener("input", () => { targetQty = clampQty(qtyInput.value || 1); update(); });
+  qtyInput.addEventListener("blur", () => { qtyInput.value = targetQty; });
+  [ownedInput, priceSourceInput, priceTargetInput].forEach((el) =>
+    el.addEventListener("input", renderCalculators));
 
   // ---------- Calculation ----------
-  function calculateRequiredAmount(sourceIndex, targetIndex) {
-    return Math.pow(3, targetIndex - sourceIndex);
-  }
+  const stepDiff = () => targetIndex - sourceIndex;
+  const basePerOne = () => Math.pow(3, stepDiff()); // amount of source per 1 target
 
-  function buildPath(sourceIndex, targetIndex) {
+  function buildPath(si, ti) {
     let html = "";
-    for (let i = sourceIndex; i <= targetIndex; i++) {
-      if (i > sourceIndex) html += '<span class="arrow">→</span>';
-      html +=
-        '<span class="pstep"><img src="' + spriteFor(LIQUIDS[i]) +
-        '" alt="" /><span>' + LIQUIDS[i] + '</span></span>';
+    for (let i = si; i <= ti; i++) {
+      if (i > si) html += '<span class="arrow">→</span>';
+      html += '<span class="pstep"><img src="' + spriteFor(LIQUIDS[i]) +
+        '" alt="" style="border-color:' + tierColor(i) + '" /><span>' + LIQUIDS[i] + '</span></span>';
     }
     return html;
   }
 
+  function animateResult() {
+    resultEl.classList.remove("pop");
+    void resultEl.offsetWidth; // reflow to restart animation
+    resultEl.classList.add("pop");
+  }
+
   function renderResult() {
     const d = t();
-    const stepDiff = targetIndex - sourceIndex;
+    const diff = stepDiff();
     resultEl.classList.remove("valid", "warn", "error");
 
-    if (stepDiff === 0) {
+    if (diff === 0) {
       resultEl.classList.add("warn");
       resultEl.innerHTML =
-        '<div class="glyph">🤔</div>' +
-        '<div class="result-status">' + d.sameTitle + '</div>' +
+        '<div class="glyph">🤔</div><div class="result-status">' + d.sameTitle + '</div>' +
         '<div class="result-line">' + d.sameLine(LIQUIDS[targetIndex]) + '</div>';
+      animateResult();
       return;
     }
-
-    if (stepDiff < 0) {
+    if (diff < 0) {
       resultEl.classList.add("error");
       resultEl.innerHTML =
-        '<div class="glyph">⛔</div>' +
-        '<div class="result-status">' + d.reverseTitle + '</div>' +
+        '<div class="glyph">⛔</div><div class="result-status">' + d.reverseTitle + '</div>' +
         '<div class="result-line">' + d.reverseLine(LIQUIDS[sourceIndex], LIQUIDS[targetIndex]) + '</div>';
+      animateResult();
       return;
     }
 
-    const amount = calculateRequiredAmount(sourceIndex, targetIndex);
+    const amount = basePerOne() * targetQty;
     resultEl.classList.add("valid");
     resultEl.innerHTML =
       '<div class="result-status">' + d.matchSuccess + '</div>' +
       '<div class="recipe">' +
         '<div class="liquid">' +
-          '<img src="' + spriteFor(LIQUIDS[sourceIndex]) + '" alt="' + LIQUIDS[sourceIndex] + '" />' +
-          '<span class="qty">× ' + amount + '</span>' +
+          '<img src="' + spriteFor(LIQUIDS[sourceIndex]) + '" alt="' + LIQUIDS[sourceIndex] +
+          '" style="border-color:' + tierColor(sourceIndex) + '" />' +
+          '<span class="qty">× ' + fmt(amount) + '</span>' +
           '<span class="lname">' + LIQUIDS[sourceIndex] + '</span>' +
         '</div>' +
         '<div class="op">→</div>' +
         '<div class="liquid">' +
-          '<img src="' + spriteFor(LIQUIDS[targetIndex]) + '" alt="' + LIQUIDS[targetIndex] + '" />' +
-          '<span class="qty">× 1</span>' +
+          '<img src="' + spriteFor(LIQUIDS[targetIndex]) + '" alt="' + LIQUIDS[targetIndex] +
+          '" style="border-color:' + tierColor(targetIndex) + '" />' +
+          '<span class="qty">× ' + fmt(targetQty) + '</span>' +
           '<span class="lname">' + LIQUIDS[targetIndex] + '</span>' +
         '</div>' +
       '</div>' +
-      '<div class="result-line">' + d.needLine(LIQUIDS[sourceIndex], amount, LIQUIDS[targetIndex]) + '</div>' +
-      '<div class="badge">' + d.badge(stepDiff, amount) + '</div>' +
-      '<div class="path">' + buildPath(sourceIndex, targetIndex) + '</div>';
+      '<div class="result-line">' + d.needLine(LIQUIDS[sourceIndex], amount, LIQUIDS[targetIndex], targetQty) + '</div>' +
+      '<div class="badge">' + d.badge(diff, basePerOne()) + '</div>' +
+      '<div class="path">' + buildPath(sourceIndex, targetIndex) + '</div>' +
+      '<div class="actions">' +
+        '<button type="button" data-action="copy">' + d.copyBtn + '</button>' +
+        '<button type="button" data-action="share">' + d.shareBtn + '</button>' +
+      '</div>';
+    animateResult();
   }
 
+  // result action buttons (event delegation; innerHTML is rebuilt each render)
+  resultEl.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+    const d = t();
+    if (btn.dataset.action === "copy") {
+      const amount = basePerOne() * targetQty;
+      copyText(d.copyText(LIQUIDS[sourceIndex], amount, LIQUIDS[targetIndex], targetQty, stepDiff()), btn, d.copied, d.copyBtn);
+    } else if (btn.dataset.action === "share") {
+      copyText(location.href, btn, d.shareCopied, d.shareBtn);
+    }
+  });
+
+  function copyText(text, btn, okLabel, restoreLabel) {
+    const done = () => { btn.textContent = okLabel; setTimeout(() => { btn.textContent = restoreLabel; }, 1500); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+    } else { fallbackCopy(text, done); }
+  }
+  function fallbackCopy(text, done) {
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); done(); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+
+  // ---------- Calculators ----------
+  function renderCalculators() {
+    const d = t();
+    const diff = stepDiff();
+    const craftOut = document.getElementById("craft-out");
+    const priceOut = document.getElementById("price-out");
+
+    document.getElementById("owned-label").textContent = d.ownedLabel(LIQUIDS[sourceIndex]);
+    document.getElementById("price-source-label").textContent = d.priceSourceLabel(LIQUIDS[sourceIndex]);
+    document.getElementById("price-target-label").textContent = d.priceTargetLabel(LIQUIDS[targetIndex]);
+
+    if (diff <= 0) {
+      craftOut.className = "calc-out muted"; craftOut.textContent = d.craftPick;
+      priceOut.className = "calc-out muted"; priceOut.textContent = d.craftPick;
+      return;
+    }
+
+    const per = basePerOne();
+
+    // Max craftable from owned source
+    const owned = Math.max(0, Math.floor(Number(ownedInput.value) || 0));
+    if (owned > 0) {
+      const made = Math.floor(owned / per);
+      const left = owned - made * per;
+      craftOut.className = "calc-out";
+      craftOut.innerHTML = d.craftResult(made, LIQUIDS[targetIndex]) +
+        (left > 0 ? '<span class="hint">' + d.craftLeftover(left, LIQUIDS[sourceIndex]) + '</span>' : "");
+    } else {
+      craftOut.className = "calc-out muted";
+      craftOut.textContent = "—";
+    }
+
+    // Price compare (per 1 target)
+    const ps = Number(priceSourceInput.value);
+    const pt = Number(priceTargetInput.value);
+    if (priceSourceInput.value !== "" && priceTargetInput.value !== "" && ps >= 0 && pt >= 0) {
+      const craftCost = ps * per;
+      let verdict = d.priceEqual, cls = "";
+      if (craftCost < pt) { verdict = d.cheaperCraft; cls = "cheaper"; }
+      else if (craftCost > pt) { verdict = d.cheaperBuy; cls = "pricier"; }
+      priceOut.className = "calc-out";
+      priceOut.innerHTML =
+        '<span class="hint">' + d.perTarget(LIQUIDS[targetIndex]) + '</span><br/>' +
+        d.priceCraft(craftCost) + " &nbsp;·&nbsp; " + d.priceBuy(pt) +
+        ' <span class="' + cls + '" style="display:block;margin-top:4px">' + verdict + '</span>';
+    } else {
+      priceOut.className = "calc-out muted";
+      priceOut.textContent = d.pricePick;
+    }
+  }
+
+  // ---------- All paths table ----------
+  function renderPaths() {
+    const d = t();
+    document.getElementById("paths-title").textContent = d.pathsTitle(LIQUIDS[targetIndex], targetQty);
+    document.getElementById("th-liquid").textContent = d.thLiquid;
+    document.getElementById("th-need").textContent = d.thNeed;
+
+    const body = document.getElementById("paths-body");
+    body.innerHTML = "";
+    LIQUIDS.forEach((name, i) => {
+      const tr = document.createElement("tr");
+      const liq = '<td><span class="liq"><img src="' + spriteFor(name) +
+        '" alt="" loading="lazy" style="border-color:' + tierColor(i) + '" />' + name + '</span></td>';
+      if (i === targetIndex) {
+        tr.className = "self is-target";
+        tr.innerHTML = liq + '<td class="amt">' + d.selfRow + '</td>';
+      } else if (i > targetIndex) {
+        tr.className = "higher";
+        tr.innerHTML = liq + '<td class="amt">' + d.higherRow + '</td>';
+      } else {
+        const need = Math.pow(3, targetIndex - i) * targetQty;
+        tr.className = "clickable";
+        tr.innerHTML = liq + '<td class="amt">× ' + fmt(need) + '</td>';
+        tr.addEventListener("click", () => { sourceIndex = i; update(); });
+      }
+      body.appendChild(tr);
+    });
+  }
+
+  // ---------- Direct pairs (clickable) ----------
+  function renderDirectPairs() {
+    pairsEl.innerHTML = "";
+    for (let i = 0; i < LIQUIDS.length - 1; i++) {
+      const li = document.createElement("li");
+      li.innerHTML =
+        '<img src="' + spriteFor(LIQUIDS[i]) + '" alt="" loading="lazy" style="border-color:' + tierColor(i) + '" />' +
+        '<span class="from">' + LIQUIDS[i] + '</span><span class="x3">× 3</span>' +
+        '<span class="spacer"></span><span class="arrow">→</span>' +
+        '<img src="' + spriteFor(LIQUIDS[i + 1]) + '" alt="" loading="lazy" style="border-color:' + tierColor(i + 1) + '" />' +
+        '<span class="to">' + LIQUIDS[i + 1] + '</span>';
+      li.addEventListener("click", () => { sourceIndex = i; targetIndex = i + 1; update(); });
+      pairsEl.appendChild(li);
+    }
+  }
+
+  // ---------- Static text ----------
   function applyStaticText() {
     const d = t();
     document.documentElement.lang = d.htmlLang;
     document.getElementById("subtitle").textContent = d.subtitle;
     document.getElementById("target-label").textContent = d.targetLabel;
     document.getElementById("source-label").textContent = d.sourceLabel;
-    document.getElementById("pairs-title").innerHTML = d.pairsTitle;
+    document.getElementById("qty-label").textContent = d.qtyLabel;
+    document.getElementById("calc-title").textContent = d.calcTitle;
+    document.getElementById("price-title").textContent = d.priceTitle;
+    document.getElementById("pairs-title").innerHTML = d.pairsTitle + ' <span class="hint">' + d.pairsHint + '</span>';
     document.getElementById("note").innerHTML = d.note;
 
     const swap = document.getElementById("swap");
-    swap.title = d.swapTitle;
-    swap.setAttribute("aria-label", d.swapTitle);
+    swap.title = d.swapTitle; swap.setAttribute("aria-label", d.swapTitle);
 
-    document.querySelectorAll("#lang-toggle button").forEach((b) => {
-      b.classList.toggle("active", b.dataset.lang === lang);
-    });
+    const ib = document.getElementById("install-btn");
+    ib.textContent = d.install;
+
+    document.querySelectorAll("#lang-toggle button").forEach((b) =>
+      b.classList.toggle("active", b.dataset.lang === lang));
   }
 
-  // ---------- Update everything ----------
+  // ---------- Update orchestrator ----------
   function update() {
     applyStaticText();
+    // Don't clobber the field while the user is typing in it.
+    if (document.activeElement !== qtyInput && qtyInput.value !== String(targetQty)) qtyInput.value = targetQty;
     targetSelect.render();
     sourceSelect.render();
     renderResult();
-    saveState();
+    renderCalculators();
+    renderPaths();
+    persist();
   }
 
+  // ---------- PWA ----------
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+  }
+  let deferredPrompt = null;
+  const installBtn = document.getElementById("install-btn");
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault(); deferredPrompt = e; installBtn.style.display = "inline-block";
+  });
+  installBtn.addEventListener("click", async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null; installBtn.style.display = "none";
+  });
+  window.addEventListener("appinstalled", () => { installBtn.style.display = "none"; });
+
+  // ---------- Boot ----------
   loadState();
   renderDirectPairs();
   update();
