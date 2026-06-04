@@ -231,6 +231,20 @@
   .field-body { flex: 1; min-width: 0; }
   .field-body label { margin-bottom: 6px; }
 
+  .price-hint { color: var(--text-dim); font-size: .82rem; margin: -4px 0 14px; }
+  .price-hint code {
+    background: var(--bg-inset); border: 1px solid var(--border-soft);
+    border-radius: 5px; padding: 1px 6px; color: var(--gold-soft); font-size: .82rem;
+  }
+  .price-input-wrap { position: relative; }
+  .price-input-wrap input { padding-right: 38px; }
+  .cur-suffix {
+    position: absolute; right: 9px; top: 50%; transform: translateY(-50%);
+    width: 22px; height: 22px; pointer-events: none; opacity: .9;
+  }
+  /* inline Exalted icon next to amounts */
+  .cur { width: 17px; height: 17px; vertical-align: -4px; margin-left: 2px; }
+
   /* visual craft-vs-buy comparison */
   .cmini { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; }
   .cmini img { width: 32px; height: 32px; border-radius: 7px; background: #07060c; border: 2px solid var(--border-soft); }
@@ -345,19 +359,26 @@
       <hr />
 
       <h3 id="price-title"></h3>
+      <p class="price-hint" id="price-hint"></p>
       <div class="calc-grid">
         <div class="field-row">
           <img id="price-source-img" class="field-img" alt="" />
           <div class="field-body">
             <label id="price-source-label" for="price-source"></label>
-            <input id="price-source" type="number" min="0" step="any" placeholder="0" inputmode="decimal" />
+            <div class="price-input-wrap">
+              <input id="price-source" type="text" autocomplete="off" placeholder="0" inputmode="decimal" />
+              <img class="cur-suffix" src="currency-exalted.png" alt="Exalted" />
+            </div>
           </div>
         </div>
         <div class="field-row">
           <img id="price-target-img" class="field-img" alt="" />
           <div class="field-body">
             <label id="price-target-label" for="price-target"></label>
-            <input id="price-target" type="number" min="0" step="any" placeholder="0" inputmode="decimal" />
+            <div class="price-input-wrap">
+              <input id="price-target" type="text" autocomplete="off" placeholder="0" inputmode="decimal" />
+              <img class="cur-suffix" src="currency-exalted.png" alt="Exalted" />
+            </div>
           </div>
         </div>
       </div>
@@ -439,6 +460,7 @@
       craftResult: (n, tgt) => 'สร้าง <span class="big">' + tgt + ' × ' + fmt(n) + '</span> ได้',
       craftLeftover: (r, src) => ' · เหลือ ' + src + " × " + fmt(r),
       priceTitle: "💰 เทียบราคา: คราฟต์เอง vs ซื้อตรง",
+      priceHint: 'หน่วยเป็น Exalted Orb · กรอกเศษส่วนได้ เช่น <code>1/7</code> หรือ <code>0.5</code>',
       priceSourceLabel: (src) => "ราคา " + src + " /ชิ้น",
       priceTargetLabel: (tgt) => "ราคา " + tgt + " /ชิ้น",
       pricePick: "ใส่ราคาทั้งสองช่องเพื่อเทียบ",
@@ -488,6 +510,7 @@
       craftResult: (n, tgt) => 'You can craft <span class="big">' + fmt(n) + '× ' + tgt + '</span>',
       craftLeftover: (r, src) => ' · ' + fmt(r) + "× " + src + " left over",
       priceTitle: "💰 Compare: craft vs buy",
+      priceHint: 'Priced in Exalted Orb · fractions ok, e.g. <code>1/7</code> or <code>0.5</code>',
       priceSourceLabel: (src) => src + " price /ea",
       priceTargetLabel: (tgt) => tgt + " price /ea",
       pricePick: "Enter both prices to compare.",
@@ -748,8 +771,25 @@
   }
 
   // ---------- Calculators ----------
-  const fmtP = (n) => Number(n).toLocaleString("en-US", { maximumFractionDigits: 2 });
+  const fmtP = (n) => Number(n).toLocaleString("en-US", { maximumFractionDigits: 3 });
   const imgTag = (i) => '<img src="' + spriteFor(LIQUIDS[i]) + '" alt="" style="border-color:' + tierColor(i) + '" />';
+  const CUR = '<img class="cur" src="currency-exalted.png" alt="Exalted" />';
+
+  // Accept a plain number ("1.5"), a fraction ("1/7"), or empty. Returns NaN if invalid.
+  function parsePrice(str) {
+    if (str == null) return NaN;
+    str = String(str).trim();
+    if (str === "") return NaN;
+    if (str.indexOf("/") !== -1) {
+      const parts = str.split("/");
+      if (parts.length !== 2) return NaN;
+      const a = parseFloat(parts[0]), b = parseFloat(parts[1]);
+      if (isFinite(a) && isFinite(b) && b !== 0) return a / b;
+      return NaN;
+    }
+    const n = parseFloat(str);
+    return isFinite(n) ? n : NaN;
+  }
 
   function renderCalculators() {
     const d = t();
@@ -800,10 +840,10 @@
       craftOut.textContent = "—";
     }
 
-    // Price compare (per 1 target) — visual craft vs buy
-    const ps = Number(priceSourceInput.value);
-    const pt = Number(priceTargetInput.value);
-    if (priceSourceInput.value !== "" && priceTargetInput.value !== "" && ps >= 0 && pt >= 0) {
+    // Price compare (per 1 target) — visual craft vs buy. Prices in Exalted Orb (fractions allowed).
+    const ps = parsePrice(priceSourceInput.value);
+    const pt = parsePrice(priceTargetInput.value);
+    if (!isNaN(ps) && !isNaN(pt) && ps >= 0 && pt >= 0) {
       const craftCost = ps * per;
       const craftWin = craftCost < pt;
       const buyWin = pt < craftCost;
@@ -815,7 +855,7 @@
           '<div class="ctitle">' + d.craftLabel + '</div>' +
           '<div class="cmini">' + imgTag(sourceIndex) + '<span class="m-qty">× ' + fmt(per) + '</span>' +
             '<span class="m-arrow">→</span>' + imgTag(targetIndex) + '</div>' +
-          '<div class="ccost">' + fmtP(craftCost) + '</div>' +
+          '<div class="ccost">' + fmtP(craftCost) + CUR + '</div>' +
         '</div>';
 
       const buyCard =
@@ -823,11 +863,11 @@
           (buyWin ? badge : "") +
           '<div class="ctitle">' + d.buyLabel + '</div>' +
           '<div class="cmini">' + imgTag(targetIndex) + '<span class="m-qty">× 1</span></div>' +
-          '<div class="ccost">' + fmtP(pt) + '</div>' +
+          '<div class="ccost">' + fmtP(pt) + CUR + '</div>' +
         '</div>';
 
       const verdict = (craftWin || buyWin)
-        ? '<div class="verdict-line">' + d.saveLine(fmtP(Math.abs(craftCost - pt))) + '</div>'
+        ? '<div class="verdict-line">' + d.saveLine(fmtP(Math.abs(craftCost - pt)) + CUR) + '</div>'
         : '<div class="verdict-line equal">' + d.equalLine + '</div>';
 
       priceOut.className = "calc-out";
@@ -896,6 +936,7 @@
     document.getElementById("qty-label").textContent = d.qtyLabel;
     document.getElementById("calc-title").textContent = d.calcTitle;
     document.getElementById("price-title").textContent = d.priceTitle;
+    document.getElementById("price-hint").innerHTML = d.priceHint;
     document.getElementById("pairs-title").innerHTML = d.pairsTitle + ' <span class="hint">' + d.pairsHint + '</span>';
     document.getElementById("note").innerHTML = d.note;
 

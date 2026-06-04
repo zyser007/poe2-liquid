@@ -1,4 +1,4 @@
-const CACHE = "poe2-liquid-v2";
+const CACHE = "poe2-liquid-v3";
 
 const ASSETS = [
   "./",
@@ -7,6 +7,7 @@ const ASSETS = [
   "icon-192.png",
   "icon-512.png",
   "icon-maskable-512.png",
+  "currency-exalted.png",
   "sprites/diluted-liquid-ire.png",
   "sprites/diluted-liquid-guilt.png",
   "sprites/diluted-liquid-greed.png",
