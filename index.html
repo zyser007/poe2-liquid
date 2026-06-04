@@ -222,6 +222,45 @@
   .cheaper { color: var(--green); font-weight: 800; }
   .pricier { color: var(--red); }
 
+  /* input rows with a sprite */
+  .field-row { display: flex; align-items: center; gap: 10px; }
+  .field-img {
+    width: 42px; height: 42px; flex: 0 0 auto; border-radius: 9px;
+    background: #07060c; border: 2px solid var(--border-soft);
+  }
+  .field-body { flex: 1; min-width: 0; }
+  .field-body label { margin-bottom: 6px; }
+
+  /* visual craft-vs-buy comparison */
+  .cmini { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; }
+  .cmini img { width: 32px; height: 32px; border-radius: 7px; background: #07060c; border: 2px solid var(--border-soft); }
+  .cmini .m-qty { font-size: .8rem; color: var(--gold); font-weight: 800; }
+  .cmini .m-arrow { color: var(--text-dim); }
+
+  .compare { display: flex; align-items: stretch; gap: 10px; margin-top: 4px; }
+  .compare-card {
+    flex: 1; background: var(--bg-card-2); border: 1px solid var(--border-soft);
+    border-radius: 12px; padding: 14px 10px 12px; text-align: center; position: relative;
+    transition: border-color .2s ease, box-shadow .2s ease, opacity .2s ease;
+  }
+  .compare-card .ctitle {
+    font-size: .72rem; color: var(--text-dim); text-transform: uppercase;
+    letter-spacing: 1px; margin-bottom: 8px; font-weight: 800;
+  }
+  .compare-card .ccost { font-size: 1.2rem; font-weight: 800; color: var(--gold); margin-top: 8px; }
+  .compare-card.win { border-color: rgba(127, 207, 131, 0.6); box-shadow: 0 0 18px rgba(127, 207, 131, 0.14); }
+  .compare-card.win .ctitle { color: var(--green); }
+  .compare-card.lose { opacity: .6; }
+  .win-badge {
+    position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+    background: var(--green); color: #0d2410; font-size: .66rem; font-weight: 800;
+    padding: 2px 9px; border-radius: 999px; white-space: nowrap;
+  }
+  .vs { align-self: center; color: var(--text-dim); font-weight: 800; font-size: .8rem; }
+  .verdict-line { text-align: center; margin-top: 12px; font-weight: 700; font-size: .95rem; }
+  .verdict-line .save { color: var(--green); }
+  .verdict-line.equal { color: var(--text-dim); }
+
   /* ---------- Tables / pairs ---------- */
   .tbl { width: 100%; border-collapse: collapse; font-size: .9rem; }
   .tbl th, .tbl td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border-soft); }
@@ -294,21 +333,32 @@
 
     <section class="card" id="calc-card">
       <h2 id="calc-title"></h2>
-      <label id="owned-label" for="owned"></label>
-      <input id="owned" type="number" min="0" step="1" placeholder="0" inputmode="numeric" />
+      <div class="field-row">
+        <img id="owned-img" class="field-img" alt="" />
+        <div class="field-body">
+          <label id="owned-label" for="owned"></label>
+          <input id="owned" type="number" min="0" step="1" placeholder="0" inputmode="numeric" />
+        </div>
+      </div>
       <div class="calc-out muted" id="craft-out"></div>
 
       <hr />
 
       <h3 id="price-title"></h3>
       <div class="calc-grid">
-        <div>
-          <label id="price-source-label" for="price-source"></label>
-          <input id="price-source" type="number" min="0" step="any" placeholder="0" inputmode="decimal" />
+        <div class="field-row">
+          <img id="price-source-img" class="field-img" alt="" />
+          <div class="field-body">
+            <label id="price-source-label" for="price-source"></label>
+            <input id="price-source" type="number" min="0" step="any" placeholder="0" inputmode="decimal" />
+          </div>
         </div>
-        <div>
-          <label id="price-target-label" for="price-target"></label>
-          <input id="price-target" type="number" min="0" step="any" placeholder="0" inputmode="decimal" />
+        <div class="field-row">
+          <img id="price-target-img" class="field-img" alt="" />
+          <div class="field-body">
+            <label id="price-target-label" for="price-target"></label>
+            <input id="price-target" type="number" min="0" step="any" placeholder="0" inputmode="decimal" />
+          </div>
         </div>
       </div>
       <div class="calc-out muted" id="price-out"></div>
@@ -392,11 +442,11 @@
       priceSourceLabel: (src) => "ราคา " + src + " /ชิ้น",
       priceTargetLabel: (tgt) => "ราคา " + tgt + " /ชิ้น",
       pricePick: "ใส่ราคาทั้งสองช่องเพื่อเทียบ",
-      priceCraft: (c) => "คราฟต์เอง: " + fmt(c),
-      priceBuy: (c) => "ซื้อตรง: " + fmt(c),
-      cheaperCraft: "→ คราฟต์เองถูกกว่า",
-      cheaperBuy: "→ ซื้อตรงถูกกว่า",
-      priceEqual: "→ ราคาเท่ากัน",
+      craftLabel: "คราฟต์เอง",
+      buyLabel: "ซื้อตรง",
+      winBadge: "✓ ถูกกว่า",
+      saveLine: (amt) => 'ประหยัด <span class="save">' + amt + '</span>',
+      equalLine: "ราคาเท่ากันพอดี",
       perTarget: (tgt) => "ต่อ 1 " + tgt,
       pathsTitle: (tgt, qty) => "🗺️ ทุกเส้นทางสู่ " + tgt + (qty > 1 ? " × " + fmt(qty) : ""),
       thLiquid: "วัตถุดิบ",
@@ -441,11 +491,11 @@
       priceSourceLabel: (src) => src + " price /ea",
       priceTargetLabel: (tgt) => tgt + " price /ea",
       pricePick: "Enter both prices to compare.",
-      priceCraft: (c) => "Craft it: " + fmt(c),
-      priceBuy: (c) => "Buy direct: " + fmt(c),
-      cheaperCraft: "→ Crafting is cheaper",
-      cheaperBuy: "→ Buying direct is cheaper",
-      priceEqual: "→ Same price",
+      craftLabel: "Craft it",
+      buyLabel: "Buy direct",
+      winBadge: "✓ cheaper",
+      saveLine: (amt) => 'Save <span class="save">' + amt + '</span>',
+      equalLine: "Exactly the same price",
       perTarget: (tgt) => "per 1 " + tgt,
       pathsTitle: (tgt, qty) => "🗺️ All paths to " + tgt + (qty > 1 ? " × " + fmt(qty) : ""),
       thLiquid: "Material",
@@ -698,6 +748,9 @@
   }
 
   // ---------- Calculators ----------
+  const fmtP = (n) => Number(n).toLocaleString("en-US", { maximumFractionDigits: 2 });
+  const imgTag = (i) => '<img src="' + spriteFor(LIQUIDS[i]) + '" alt="" style="border-color:' + tierColor(i) + '" />';
+
   function renderCalculators() {
     const d = t();
     const diff = stepDiff();
@@ -707,6 +760,16 @@
     document.getElementById("owned-label").textContent = d.ownedLabel(LIQUIDS[sourceIndex]);
     document.getElementById("price-source-label").textContent = d.priceSourceLabel(LIQUIDS[sourceIndex]);
     document.getElementById("price-target-label").textContent = d.priceTargetLabel(LIQUIDS[targetIndex]);
+
+    // keep the field thumbnails in sync with the current selection
+    const setImg = (id, i) => {
+      const im = document.getElementById(id);
+      im.src = spriteFor(LIQUIDS[i]);
+      im.style.borderColor = tierColor(i);
+    };
+    setImg("owned-img", sourceIndex);
+    setImg("price-source-img", sourceIndex);
+    setImg("price-target-img", targetIndex);
 
     if (diff <= 0) {
       craftOut.className = "calc-out muted"; craftOut.textContent = d.craftPick;
@@ -722,26 +785,56 @@
       const made = Math.floor(owned / per);
       const left = owned - made * per;
       craftOut.className = "calc-out";
-      craftOut.innerHTML = d.craftResult(made, LIQUIDS[targetIndex]) +
-        (left > 0 ? '<span class="hint">' + d.craftLeftover(left, LIQUIDS[sourceIndex]) + '</span>' : "");
+      craftOut.innerHTML =
+        '<div class="cmini">' +
+          imgTag(sourceIndex) + '<span class="m-qty">× ' + fmt(owned) + '</span>' +
+          '<span class="m-arrow">→</span>' +
+          imgTag(targetIndex) + '<span class="m-qty">× ' + fmt(made) + '</span>' +
+        '</div>' +
+        (left > 0
+          ? '<div class="hint" style="text-align:center;margin-top:8px">' +
+              d.craftLeftover(left, LIQUIDS[sourceIndex]).replace(/^\s*·\s*/, "") + '</div>'
+          : "");
     } else {
       craftOut.className = "calc-out muted";
       craftOut.textContent = "—";
     }
 
-    // Price compare (per 1 target)
+    // Price compare (per 1 target) — visual craft vs buy
     const ps = Number(priceSourceInput.value);
     const pt = Number(priceTargetInput.value);
     if (priceSourceInput.value !== "" && priceTargetInput.value !== "" && ps >= 0 && pt >= 0) {
       const craftCost = ps * per;
-      let verdict = d.priceEqual, cls = "";
-      if (craftCost < pt) { verdict = d.cheaperCraft; cls = "cheaper"; }
-      else if (craftCost > pt) { verdict = d.cheaperBuy; cls = "pricier"; }
+      const craftWin = craftCost < pt;
+      const buyWin = pt < craftCost;
+      const badge = '<span class="win-badge">' + d.winBadge + '</span>';
+
+      const craftCard =
+        '<div class="compare-card' + (craftWin ? " win" : (buyWin ? " lose" : "")) + '">' +
+          (craftWin ? badge : "") +
+          '<div class="ctitle">' + d.craftLabel + '</div>' +
+          '<div class="cmini">' + imgTag(sourceIndex) + '<span class="m-qty">× ' + fmt(per) + '</span>' +
+            '<span class="m-arrow">→</span>' + imgTag(targetIndex) + '</div>' +
+          '<div class="ccost">' + fmtP(craftCost) + '</div>' +
+        '</div>';
+
+      const buyCard =
+        '<div class="compare-card' + (buyWin ? " win" : (craftWin ? " lose" : "")) + '">' +
+          (buyWin ? badge : "") +
+          '<div class="ctitle">' + d.buyLabel + '</div>' +
+          '<div class="cmini">' + imgTag(targetIndex) + '<span class="m-qty">× 1</span></div>' +
+          '<div class="ccost">' + fmtP(pt) + '</div>' +
+        '</div>';
+
+      const verdict = (craftWin || buyWin)
+        ? '<div class="verdict-line">' + d.saveLine(fmtP(Math.abs(craftCost - pt))) + '</div>'
+        : '<div class="verdict-line equal">' + d.equalLine + '</div>';
+
       priceOut.className = "calc-out";
       priceOut.innerHTML =
-        '<span class="hint">' + d.perTarget(LIQUIDS[targetIndex]) + '</span><br/>' +
-        d.priceCraft(craftCost) + " &nbsp;·&nbsp; " + d.priceBuy(pt) +
-        ' <span class="' + cls + '" style="display:block;margin-top:4px">' + verdict + '</span>';
+        '<div class="hint" style="text-align:center;margin-bottom:10px">' + d.perTarget(LIQUIDS[targetIndex]) + '</div>' +
+        '<div class="compare">' + craftCard + '<div class="vs">VS</div>' + buyCard + '</div>' +
+        verdict;
     } else {
       priceOut.className = "calc-out muted";
       priceOut.textContent = d.pricePick;
