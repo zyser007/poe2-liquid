@@ -6,224 +6,328 @@
 <title>POE2 Liquid Emotion Matcher</title>
 <style>
   :root {
-    --bg: #0d0b08;
-    --bg-card: #17130d;
-    --bg-card-2: #1f1a11;
+    --bg: #0c0a07;
+    --bg-card: #16120b;
+    --bg-card-2: #1d1810;
+    --bg-inset: #0f0c07;
     --border: #3a2f1c;
+    --border-soft: #2a2114;
     --gold: #d4af37;
     --gold-soft: #e8c969;
-    --text: #e8e2d4;
+    --text: #ece6d8;
     --text-dim: #9c9484;
-    --green: #6fbf73;
-    --red: #d9707a;
-    --amber: #e0a93b;
+    --green: #7fcf83;
+    --red: #e07b85;
+    --amber: #e6b34a;
   }
 
   * { box-sizing: border-box; }
 
+  html, body { -webkit-tap-highlight-color: transparent; }
+
   body {
     margin: 0;
     background:
-      radial-gradient(1200px 600px at 50% -10%, #241c10 0%, transparent 60%),
+      radial-gradient(1100px 520px at 50% -8%, #2a2010 0%, transparent 62%),
+      radial-gradient(800px 400px at 100% 110%, #1a1409 0%, transparent 60%),
       var(--bg);
     color: var(--text);
     font-family: "Segoe UI", "Helvetica Neue", system-ui, -apple-system, "Noto Sans Thai", sans-serif;
     line-height: 1.6;
     min-height: 100vh;
-    padding: 24px 16px 64px;
+    padding: 28px 16px 72px;
   }
 
-  .wrap {
-    max-width: 720px;
-    margin: 0 auto;
-  }
+  .wrap { max-width: 760px; margin: 0 auto; }
 
-  header {
-    text-align: center;
-    margin-bottom: 28px;
-  }
+  header { text-align: center; margin-bottom: 26px; }
 
   h1 {
-    font-size: 1.9rem;
+    font-size: clamp(1.5rem, 5vw, 2.1rem);
     margin: 0 0 8px;
     color: var(--gold);
     letter-spacing: 0.5px;
-    text-shadow: 0 0 18px rgba(212, 175, 55, 0.25);
+    text-shadow: 0 0 22px rgba(212, 175, 55, 0.3);
   }
 
-  .subtitle {
-    color: var(--text-dim);
-    font-size: 0.95rem;
-    margin: 0;
-  }
+  .subtitle { color: var(--text-dim); font-size: 0.95rem; margin: 0; }
 
   .card {
     background: linear-gradient(180deg, var(--bg-card), var(--bg-card-2));
     border: 1px solid var(--border);
-    border-radius: 14px;
+    border-radius: 16px;
     padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+    margin-bottom: 18px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   }
 
-  .controls {
-    display: grid;
-    gap: 16px;
-  }
-
-  @media (min-width: 560px) {
-    .controls { grid-template-columns: 1fr 1fr; }
+  /* ---------- Controls ---------- */
+  .controls { display: grid; gap: 18px; }
+  @media (min-width: 600px) {
+    .controls {
+      grid-template-columns: 1fr auto 1fr;
+      align-items: end;
+    }
   }
 
   label {
     display: block;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--gold-soft);
-    margin-bottom: 6px;
-    font-weight: 600;
+    margin-bottom: 8px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
   }
 
-  select {
-    width: 100%;
-    padding: 11px 12px;
-    background: #100d08;
-    color: var(--text);
+  .swap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 6px;
+  }
+  .swap button {
+    width: 42px; height: 42px;
+    border-radius: 50%;
     border: 1px solid var(--border);
-    border-radius: 9px;
-    font-size: 1rem;
-    appearance: none;
+    background: var(--bg-inset);
+    color: var(--gold);
+    font-size: 1.1rem;
     cursor: pointer;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23d4af37' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 14px center;
+    transition: transform .15s ease, border-color .15s ease, background .15s ease;
+  }
+  .swap button:hover { border-color: var(--gold); background: #1a150d; }
+  .swap button:active { transform: rotate(180deg) scale(.92); }
+  @media (max-width: 599px) {
+    .swap { padding: 0; }
+    .swap button { transform: rotate(90deg); }
+    .swap button:active { transform: rotate(270deg) scale(.92); }
   }
 
-  select:focus {
+  /* ---------- Custom select ---------- */
+  .select { position: relative; }
+
+  .select-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--bg-inset);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    color: var(--text);
+    font-size: 1rem;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  .select-trigger:hover { border-color: #50401f; }
+  .select.open .select-trigger,
+  .select-trigger:focus-visible {
     outline: none;
     border-color: var(--gold);
-    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.18);
   }
 
-  /* Result card */
-  .result {
-    text-align: center;
+  .select-trigger img {
+    width: 38px; height: 38px;
+    flex: 0 0 auto;
+    border-radius: 8px;
+    background: #07060c;
+    border: 1px solid var(--border-soft);
   }
+  .select-trigger .name { flex: 1; font-weight: 600; }
+  .select-trigger .caret { color: var(--gold); font-size: .7rem; transition: transform .2s ease; }
+  .select.open .select-trigger .caret { transform: rotate(180deg); }
 
-  .result.valid  { border-color: rgba(111, 191, 115, 0.5); }
-  .result.warn   { border-color: rgba(224, 169, 59, 0.5); }
-  .result.error  { border-color: rgba(217, 112, 122, 0.5); }
+  .select-panel {
+    position: absolute;
+    z-index: 30;
+    top: calc(100% + 6px);
+    left: 0; right: 0;
+    max-height: 320px;
+    overflow-y: auto;
+    background: #14100a;
+    border: 1px solid var(--gold);
+    border-radius: 12px;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+    padding: 6px;
+    display: none;
+  }
+  .select.open .select-panel { display: block; }
+
+  .option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 10px;
+    border-radius: 9px;
+    cursor: pointer;
+  }
+  .option img {
+    width: 34px; height: 34px;
+    border-radius: 7px;
+    background: #07060c;
+    border: 1px solid var(--border-soft);
+  }
+  .option .name { font-size: .95rem; }
+  .option .tier { margin-left: auto; color: var(--text-dim); font-size: .72rem; }
+  .option:hover, .option.active { background: rgba(212, 175, 55, 0.14); }
+  .option.selected { background: rgba(212, 175, 55, 0.1); }
+  .option.selected .name { color: var(--gold-soft); font-weight: 700; }
+
+  /* ---------- Result ---------- */
+  .result { text-align: center; transition: border-color .2s ease; }
+  .result.valid { border-color: rgba(127, 207, 131, 0.45); }
+  .result.warn  { border-color: rgba(230, 179, 74, 0.45); }
+  .result.error { border-color: rgba(224, 123, 133, 0.45); }
 
   .result-status {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
-    margin-bottom: 12px;
+    letter-spacing: 2px;
+    margin-bottom: 14px;
+    font-weight: 800;
+  }
+  .valid .result-status { color: var(--green); }
+  .warn  .result-status { color: var(--amber); }
+  .error .result-status { color: var(--red); }
+
+  /* recipe row: source xN  ->  target */
+  .recipe {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin: 6px 0 4px;
+  }
+  .recipe .liquid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 92px;
+  }
+  .recipe .liquid img {
+    width: 64px; height: 64px;
+    border-radius: 12px;
+    background: #07060c;
+    border: 1px solid var(--border);
+    box-shadow: 0 0 18px rgba(212, 175, 55, 0.12);
+  }
+  .recipe .liquid .lname { font-size: .82rem; color: var(--text-dim); max-width: 110px; }
+  .recipe .qty { font-size: 1.05rem; font-weight: 800; color: var(--gold); }
+  .recipe .op {
+    font-size: 1.6rem;
+    color: var(--gold);
     font-weight: 700;
   }
-  .valid  .result-status { color: var(--green); }
-  .warn   .result-status { color: var(--amber); }
-  .error  .result-status { color: var(--red); }
-
-  .result-amount {
-    font-size: 2.6rem;
-    font-weight: 800;
+  .recipe .big-amount {
+    font-size: 2rem;
+    font-weight: 900;
     color: var(--gold);
-    line-height: 1.1;
-    margin: 6px 0;
-    text-shadow: 0 0 22px rgba(212, 175, 55, 0.3);
+    line-height: 1;
+    text-shadow: 0 0 20px rgba(212, 175, 55, 0.35);
   }
+  .recipe .big-amount small { display:block; font-size: .7rem; color: var(--text-dim); font-weight: 600; letter-spacing: 1px; margin-top: 2px; }
 
-  .result-amount small {
-    font-size: 1rem;
-    color: var(--text-dim);
-    font-weight: 500;
-  }
+  .result-line { font-size: 1rem; margin: 12px 0 2px; }
+  .result-sub { color: var(--text-dim); font-size: 0.9rem; margin-top: 6px; }
 
-  .result-line {
-    font-size: 1.02rem;
-    margin: 4px 0;
-  }
-
-  .result-sub {
-    color: var(--text-dim);
-    font-size: 0.92rem;
+  .badge {
+    display: inline-block;
     margin-top: 10px;
+    padding: 3px 12px;
+    border-radius: 999px;
+    background: rgba(212, 175, 55, 0.12);
+    border: 1px solid var(--border);
+    color: var(--gold-soft);
+    font-size: .82rem;
+    font-weight: 600;
   }
 
   .path {
     margin-top: 16px;
     padding-top: 16px;
     border-top: 1px dashed var(--border);
-    font-size: 0.95rem;
-    color: var(--gold-soft);
-    word-break: break-word;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px 4px;
   }
-  .path .arrow { color: var(--text-dim); margin: 0 4px; }
-
-  /* Direct pairs */
-  h2 {
-    font-size: 1.1rem;
-    color: var(--gold);
-    margin: 0 0 14px;
+  .path .pstep {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg-inset);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    padding: 4px 8px;
   }
+  .path .pstep img { width: 26px; height: 26px; border-radius: 5px; }
+  .path .pstep span { font-size: .82rem; color: var(--gold-soft); }
+  .path .arrow { color: var(--text-dim); }
 
-  .pairs {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: 8px;
-  }
+  /* warn / error big icon */
+  .glyph { font-size: 2.4rem; line-height: 1; margin-bottom: 6px; }
 
+  /* ---------- Direct pairs ---------- */
+  h2 { font-size: 1.05rem; color: var(--gold); margin: 0 0 14px; display:flex; align-items:center; gap:8px; }
+
+  .pairs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .pairs li {
     display: flex;
     align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    padding: 10px 12px;
-    background: #100d08;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-size: 0.92rem;
+    gap: 10px;
+    padding: 8px 12px;
+    background: var(--bg-inset);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
   }
-
-  .pairs .from { color: var(--text); }
-  .pairs .x3 { color: var(--gold); font-weight: 700; }
+  .pairs img { width: 32px; height: 32px; border-radius: 6px; background:#07060c; }
+  .pairs .from { color: var(--text); font-size: .9rem; }
+  .pairs .x3 { color: var(--gold); font-weight: 800; font-size: .9rem; }
   .pairs .arrow { color: var(--text-dim); }
-  .pairs .to { color: var(--gold-soft); font-weight: 600; }
+  .pairs .to { color: var(--gold-soft); font-weight: 700; font-size: .9rem; }
+  .pairs .spacer { flex: 1; }
 
-  .note {
-    color: var(--text-dim);
-    font-size: 0.88rem;
-    text-align: center;
-  }
+  .note { color: var(--text-dim); font-size: 0.88rem; text-align: center; }
   .note strong { color: var(--gold-soft); }
+
+  /* scrollbar */
+  .select-panel::-webkit-scrollbar { width: 8px; }
+  .select-panel::-webkit-scrollbar-thumb { background: #3a2f1c; border-radius: 8px; }
 </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <h1>POE2 Liquid Emotion Matcher</h1>
+      <h1>⚗️ POE2 Liquid Emotion Matcher</h1>
       <p class="subtitle">คำนวณจำนวนวัตถุดิบที่ต้องใช้ในการสร้าง Liquid Emotion</p>
     </header>
 
     <section class="card">
       <div class="controls">
         <div>
-          <label for="target">Liquid ที่ต้องการสร้าง</label>
-          <select id="target"></select>
+          <label id="target-label">Liquid ที่ต้องการสร้าง</label>
+          <div class="select" id="target-select"></div>
+        </div>
+        <div class="swap">
+          <button id="swap" type="button" title="สลับ Target / Source" aria-label="สลับ Target และ Source">⇆</button>
         </div>
         <div>
-          <label for="source">Liquid ที่ใช้เป็นวัตถุดิบ</label>
-          <select id="source"></select>
+          <label id="source-label">Liquid ที่ใช้เป็นวัตถุดิบ</label>
+          <div class="select" id="source-select"></div>
         </div>
       </div>
     </section>
 
-    <section class="card result" id="result"></section>
+    <section class="card result" id="result" aria-live="polite"></section>
 
     <section class="card">
-      <h2>คู่อัปเกรดโดยตรง (Direct Upgrade Pairs)</h2>
+      <h2>🔁 คู่อัปเกรดโดยตรง (Direct Upgrade Pairs)</h2>
       <ul class="pairs" id="pairs"></ul>
     </section>
 
@@ -246,63 +350,143 @@
     "Concentrated Liquid Suffering"
   ];
 
-  const targetEl = document.getElementById("target");
-  const sourceEl = document.getElementById("source");
+  const spriteFor = (name) => "sprites/" + name.toLowerCase().replace(/\s+/g, "-") + ".png";
+
+  // ---------- State ----------
+  let targetIndex = LIQUIDS.indexOf("Liquid Disgust");
+  let sourceIndex = LIQUIDS.indexOf("Liquid Envy");
+
   const resultEl = document.getElementById("result");
   const pairsEl = document.getElementById("pairs");
 
-  function initSelects() {
-    LIQUIDS.forEach((name, i) => {
-      const o1 = document.createElement("option");
-      o1.value = i;
-      o1.textContent = name;
-      targetEl.appendChild(o1);
+  // ---------- Custom select component ----------
+  function createSelect(rootId, labelId, getValue, setValue) {
+    const root = document.getElementById(rootId);
 
-      const o2 = document.createElement("option");
-      o2.value = i;
-      o2.textContent = name;
-      sourceEl.appendChild(o2);
+    const trigger = document.createElement("button");
+    trigger.type = "button";
+    trigger.className = "select-trigger";
+    trigger.setAttribute("aria-haspopup", "listbox");
+    trigger.setAttribute("aria-expanded", "false");
+    trigger.setAttribute("aria-labelledby", labelId);
+
+    const panel = document.createElement("div");
+    panel.className = "select-panel";
+    panel.setAttribute("role", "listbox");
+
+    LIQUIDS.forEach((name, i) => {
+      const opt = document.createElement("div");
+      opt.className = "option";
+      opt.setAttribute("role", "option");
+      opt.dataset.index = i;
+      opt.innerHTML =
+        '<img src="' + spriteFor(name) + '" alt="" loading="lazy" />' +
+        '<span class="name">' + name + '</span>' +
+        '<span class="tier">ขั้น ' + (i + 1) + '</span>';
+      opt.addEventListener("click", () => {
+        setValue(i);
+        close();
+        trigger.focus();
+      });
+      panel.appendChild(opt);
     });
 
-    // Default: Target = Liquid Disgust, Source = Liquid Envy
-    targetEl.value = LIQUIDS.indexOf("Liquid Disgust");
-    sourceEl.value = LIQUIDS.indexOf("Liquid Envy");
+    root.appendChild(trigger);
+    root.appendChild(panel);
+
+    function open() {
+      root.classList.add("open");
+      trigger.setAttribute("aria-expanded", "true");
+      const sel = panel.querySelector(".option.selected");
+      if (sel) sel.scrollIntoView({ block: "nearest" });
+    }
+    function close() {
+      root.classList.remove("open");
+      trigger.setAttribute("aria-expanded", "false");
+    }
+    function toggle() { root.classList.contains("open") ? close() : open(); }
+
+    trigger.addEventListener("click", toggle);
+
+    trigger.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowDown") { e.preventDefault(); setValue(Math.min(LIQUIDS.length - 1, getValue() + 1)); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); setValue(Math.max(0, getValue() - 1)); }
+      else if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+      else if (e.key === "Escape") { close(); }
+    });
+
+    function render() {
+      const i = getValue();
+      const name = LIQUIDS[i];
+      trigger.innerHTML =
+        '<img src="' + spriteFor(name) + '" alt="" />' +
+        '<span class="name">' + name + '</span>' +
+        '<span class="caret">▼</span>';
+      panel.querySelectorAll(".option").forEach((o) => {
+        o.classList.toggle("selected", Number(o.dataset.index) === i);
+      });
+    }
+
+    return { root, render, close };
   }
 
+  const targetSelect = createSelect("target-select", "target-label",
+    () => targetIndex, (i) => { targetIndex = i; update(); });
+  const sourceSelect = createSelect("source-select", "source-label",
+    () => sourceIndex, (i) => { sourceIndex = i; update(); });
+
+  // Close panels on outside click
+  document.addEventListener("click", (e) => {
+    if (!targetSelect.root.contains(e.target)) targetSelect.close();
+    if (!sourceSelect.root.contains(e.target)) sourceSelect.close();
+  });
+
+  // Swap button
+  document.getElementById("swap").addEventListener("click", () => {
+    [targetIndex, sourceIndex] = [sourceIndex, targetIndex];
+    update();
+  });
+
+  // ---------- Direct pairs ----------
   function renderDirectPairs() {
     for (let i = 0; i < LIQUIDS.length - 1; i++) {
       const li = document.createElement("li");
       li.innerHTML =
+        '<img src="' + spriteFor(LIQUIDS[i]) + '" alt="" loading="lazy" />' +
         '<span class="from">' + LIQUIDS[i] + '</span>' +
         '<span class="x3">× 3</span>' +
+        '<span class="spacer"></span>' +
         '<span class="arrow">→</span>' +
+        '<img src="' + spriteFor(LIQUIDS[i + 1]) + '" alt="" loading="lazy" />' +
         '<span class="to">' + LIQUIDS[i + 1] + '</span>';
       pairsEl.appendChild(li);
     }
   }
 
+  // ---------- Calculation ----------
   function calculateRequiredAmount(sourceIndex, targetIndex) {
     return Math.pow(3, targetIndex - sourceIndex);
   }
 
   function buildPath(sourceIndex, targetIndex) {
-    const parts = [];
+    let html = "";
     for (let i = sourceIndex; i <= targetIndex; i++) {
-      parts.push('<span class="step">' + LIQUIDS[i] + '</span>');
+      if (i > sourceIndex) html += '<span class="arrow">→</span>';
+      html +=
+        '<span class="pstep"><img src="' + spriteFor(LIQUIDS[i]) +
+        '" alt="" /><span>' + LIQUIDS[i] + '</span></span>';
     }
-    return parts.join('<span class="arrow">→</span>');
+    return html;
   }
 
   function renderResult() {
-    const sourceIndex = parseInt(sourceEl.value, 10);
-    const targetIndex = parseInt(targetEl.value, 10);
     const stepDiff = targetIndex - sourceIndex;
-
     resultEl.classList.remove("valid", "warn", "error");
 
     if (stepDiff === 0) {
       resultEl.classList.add("warn");
       resultEl.innerHTML =
+        '<div class="glyph">🤔</div>' +
         '<div class="result-status">เลือก Liquid คนละขั้นก่อนนะ</div>' +
         '<div class="result-line">ตอนนี้เลือกเป็น <strong>' + LIQUIDS[targetIndex] +
         '</strong> เหมือนกันทั้ง 2 ช่อง</div>';
@@ -312,32 +496,46 @@
     if (stepDiff < 0) {
       resultEl.classList.add("error");
       resultEl.innerHTML =
+        '<div class="glyph">⛔</div>' +
         '<div class="result-status">สร้างย้อนขั้นไม่ได้</div>' +
         '<div class="result-line"><strong>' + LIQUIDS[sourceIndex] +
         '</strong> อยู่สูงกว่า <strong>' + LIQUIDS[targetIndex] + '</strong></div>';
       return;
     }
 
-    const requiredAmount = calculateRequiredAmount(sourceIndex, targetIndex);
+    const amount = calculateRequiredAmount(sourceIndex, targetIndex);
     resultEl.classList.add("valid");
     resultEl.innerHTML =
-      '<div class="result-status">จับคู่สำเร็จ</div>' +
-      '<div class="result-amount">' + requiredAmount +
-      ' <small>ชิ้น</small></div>' +
+      '<div class="result-status">✦ จับคู่สำเร็จ ✦</div>' +
+      '<div class="recipe">' +
+        '<div class="liquid">' +
+          '<img src="' + spriteFor(LIQUIDS[sourceIndex]) + '" alt="' + LIQUIDS[sourceIndex] + '" />' +
+          '<span class="qty">× ' + amount + '</span>' +
+          '<span class="lname">' + LIQUIDS[sourceIndex] + '</span>' +
+        '</div>' +
+        '<div class="op">→</div>' +
+        '<div class="liquid">' +
+          '<img src="' + spriteFor(LIQUIDS[targetIndex]) + '" alt="' + LIQUIDS[targetIndex] + '" />' +
+          '<span class="qty">× 1</span>' +
+          '<span class="lname">' + LIQUIDS[targetIndex] + '</span>' +
+        '</div>' +
+      '</div>' +
       '<div class="result-line">ต้องใช้ <strong>' + LIQUIDS[sourceIndex] +
-      '</strong> จำนวน <strong>' + requiredAmount + '</strong> ชิ้น</div>' +
-      '<div class="result-line">เพื่อสร้าง <strong>' + LIQUIDS[targetIndex] +
-      '</strong> จำนวน <strong>1</strong> ชิ้น</div>' +
-      '<div class="result-sub">ระยะห่าง: ' + stepDiff + ' ขั้น</div>' +
+      '</strong> จำนวน <strong>' + amount + '</strong> ชิ้น เพื่อสร้าง <strong>' +
+      LIQUIDS[targetIndex] + '</strong> จำนวน <strong>1</strong> ชิ้น</div>' +
+      '<div class="badge">ระยะห่าง ' + stepDiff + ' ขั้น · 3^' + stepDiff + ' = ' + amount + '</div>' +
       '<div class="path">' + buildPath(sourceIndex, targetIndex) + '</div>';
   }
 
-  targetEl.addEventListener("change", renderResult);
-  sourceEl.addEventListener("change", renderResult);
+  // ---------- Update everything ----------
+  function update() {
+    targetSelect.render();
+    sourceSelect.render();
+    renderResult();
+  }
 
-  initSelects();
   renderDirectPairs();
-  renderResult();
+  update();
 </script>
 </body>
 </html>
